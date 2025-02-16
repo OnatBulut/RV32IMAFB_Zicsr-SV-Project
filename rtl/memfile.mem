@@ -1,0 +1,21 @@
+00000193
+00700213
+01600293
+0042a023
+0081a283
+0051a023
+0051a223
+ff5ff06f
+
+/*
+https://riscvasm.lucasteske.dev/
+
+0x0000  _boot: addi x3, x0, 0
+0x0004         addi x4, x0, 7
+0x0008         addi x5, x0, 0x16
+0x000c         sw x4, 0(x5)
+0x0010  loop:  lw x5, 8(x3)
+0x0014         sw x5, 0(x3)
+0x0018         sw x5, 4(x3)
+0x001c         jal x0, loop
+*/
