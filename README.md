@@ -10,7 +10,6 @@
 - Kombinasyonel bloklar engellenmiş şekilde (=) atanmalıdır.
 - Ardışıl bloklar engellenmemiş şekilde (<=) atanmalıdır.
 - Sinyal isimleri anlamlı olsa iyi olur. Uzun olup anlamlı olması kısa olmasına tercih edilmelidir.
-  
 - Latch kullanımından kaçınılmalıdır.
 - Modül ve sinyal isimleri snake_case şeklinde olmalıdır. Modüller instantiate edilirken baş harfleri büyük şekilde Snake_Case ya da PascalCase kullanılabilir.
 - Mevcutta işinizi gören modül varsa kullanabilirsiniz, her şey için yeni modüle gerek yok. Ör register.sv
