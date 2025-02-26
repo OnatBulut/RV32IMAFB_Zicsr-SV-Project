@@ -12,13 +12,14 @@ module riscv_core(input  logic        clk_i, rst_n_i,
     logic        stall_f, stall_d, flush_d, flush_e;
     logic [1:0]  forward_ae, forward_be;
     logic [1:0]  result_src_e, result_src_w, imm_src;
-    logic [2:0]  alu_control;
+    logic [2:0]  funct3;
+    logic [3:0]  alu_control;
     logic [31:0] instr_d, instr_e, instr_m, instr_w;
     logic [31:0] read_data_internal;
                   
     control_unit Control_Unit(.clk_i(clk_i), .rst_n_i(rst_n_i),
                               .op_i(instr_d[6:0]),
-                              .funct3_i(instr_d[14:12]),
+                              .funct3_d_i(instr_d[14:12]),
                               .funct7b5_i(instr_d[30]),
                               .zero_e_i(zero),
                               .flush_e_i(flush_e),
@@ -30,7 +31,8 @@ module riscv_core(input  logic        clk_i, rst_n_i,
                               .imm_src_d_o(imm_src),
                               .result_src_w_o(result_src_w),
                               .result_src_e_o(result_src_e),
-                              .alu_control_e_o(alu_control));
+                              .alu_control_e_o(alu_control),
+                              .funct3_m_o(funct3));
 
     datapath Datapath(.clk_i(clk_i),
                       .rst_n_i(rst_n_i),
@@ -78,6 +80,7 @@ module riscv_core(input  logic        clk_i, rst_n_i,
     memory_controller Memory_Controller(.clk_i(clk_i),
                                         .rst_n_i(rst_n_i),
                                         .write_enable_i(mem_write_o),
+                                        .funct3_i(funct3),
                                         .sw_i(sw_i),
                                         .address_i(alu_result_o),
                                         .datapath_read_i(write_data_o),

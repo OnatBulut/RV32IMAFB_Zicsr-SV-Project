@@ -3,15 +3,18 @@
 module pipeline_control_reg_de(input  logic       clk_i, rst_n_i, clr_i,
                                input  logic       jump_d_i, branch_d_i, mem_write_d_i, alu_src_d_i, reg_write_d_i,
                                input  logic [1:0] result_src_d_i,
-                               input  logic [2:0] alu_control_d_i,
+                               input  logic [2:0] funct3_d_i,
+                               input  logic [3:0] alu_control_d_i,
                                 
                                output logic       jump_e_o, branch_e_o, mem_write_e_o, alu_src_e_o, reg_write_e_o,
                                output logic [1:0] result_src_e_o,
-                               output logic [2:0] alu_control_e_o);
+                               output logic [2:0] funct3_e_o,
+                               output logic [3:0] alu_control_e_o);
 
     logic       jump_reg, branch_reg, mem_write_reg, alu_src_reg, reg_write_reg;
     logic [1:0] result_src_reg;
-    logic [2:0] alu_control_reg;
+    logic [2:0] funct3_reg;
+    logic [3:0] alu_control_reg;
 
     always_ff @(posedge clk_i or negedge rst_n_i) begin
         if (~rst_n_i | clr_i) begin
@@ -21,6 +24,7 @@ module pipeline_control_reg_de(input  logic       clk_i, rst_n_i, clr_i,
             alu_src_reg <= 0;
             reg_write_reg <= 0;
             result_src_reg <= 0;
+            funct3_reg <= 0;
             alu_control_reg <= 0;
         end
         else begin
@@ -30,6 +34,7 @@ module pipeline_control_reg_de(input  logic       clk_i, rst_n_i, clr_i,
             alu_src_reg <= alu_src_d_i;
             reg_write_reg <= reg_write_d_i;
             result_src_reg <= result_src_d_i;
+            funct3_reg <= funct3_d_i;
             alu_control_reg <= alu_control_d_i;
         end
     end
@@ -41,6 +46,8 @@ module pipeline_control_reg_de(input  logic       clk_i, rst_n_i, clr_i,
     assign reg_write_e_o = reg_write_reg;
     
     assign result_src_e_o = result_src_reg;
+    
+    assign funct3_e_o = funct3_reg;
     
     assign alu_control_e_o = alu_control_reg;
 
