@@ -5,7 +5,7 @@ module datapath(input  logic        clk_i, rst_n_i,
                 input  logic        stall_f_i, stall_d_i, flush_d_i, flush_e_i,
                 input  logic [1:0]  result_src_i, imm_src_i,
                 input  logic [1:0]  forward_ae, forward_be,
-                input  logic [2:0]  alu_control_i,
+                input  logic [3:0]  alu_control_i,
                 input  logic [31:0] instr_i,
                 input  logic [31:0] read_data_i,
                 
@@ -25,6 +25,7 @@ module datapath(input  logic        clk_i, rst_n_i,
     
     register PC(.clk_i(clk_i),
                 .rst_n_i(rst_n_i),
+                .clr_i(1'b0),
                 .en_i(~stall_f_i),
                 .in_i(pc_next_f),
                 .out_o(pc_o));
@@ -162,24 +163,28 @@ module datapath(input  logic        clk_i, rst_n_i,
     
     register ALU_Result_EM(.clk_i(clk_i),
                            .rst_n_i(rst_n_i),
+                           .clr_i(1'b0),
                            .en_i(1'b1),
                            .in_i(alu_result_e),
                            .out_o(alu_result_m_o));
                              
     register Write_Data_EM(.clk_i(clk_i),
                            .rst_n_i(rst_n_i),
+                           .clr_i(1'b0),
                            .en_i(1'b1),
                            .in_i(write_data_e),
                            .out_o(write_data_o));
                            
     register Instr_Reg_EM(.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
+                          .clr_i(1'b0),
                           .en_i(1'b1),
                           .in_i(instr_e_o),
                           .out_o(instr_m_o));
     
     register PC_Increment_EM(.clk_i(clk_i),
                              .rst_n_i(rst_n_i),
+                             .clr_i(1'b0),
                              .en_i(1'b1),
                              .in_i(pc_plus_4_e),
                              .out_o(pc_plus_4_m));
@@ -194,24 +199,28 @@ module datapath(input  logic        clk_i, rst_n_i,
     
     register ALU_Result_MW(.clk_i(clk_i),
                            .rst_n_i(rst_n_i),
+                           .clr_i(1'b0),
                            .en_i(1'b1),
                            .in_i(alu_result_m_o),
                            .out_o(alu_result_w));
                            
     register Read_Data_MW(.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
+                          .clr_i(1'b0),
                           .en_i(1'b1),
                           .in_i(read_data_i),
                           .out_o(read_data_w));
                           
     register Instr_Reg_MW(.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
+                          .clr_i(1'b0),
                           .en_i(1'b1),
                           .in_i(instr_m_o),
                           .out_o(instr_w_o));
                           
     register PC_Increment_MW(.clk_i(clk_i),
                              .rst_n_i(rst_n_i),
+                             .clr_i(1'b0),
                              .en_i(1'b1),
                              .in_i(pc_plus_4_m),
                              .out_o(pc_plus_4_w));
