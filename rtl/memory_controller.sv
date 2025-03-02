@@ -55,10 +55,10 @@ module memory_controller(input  logic        clk_i, rst_n_i, write_enable_i,
             io_mem[2] <= 4'h0;
         end else begin
             if (write_enable_i) begin
-                if (address_i == 32'h100)
+                if (address_i == 32'h4000)
                     io_mem[0] <= datapath_read[3:0];
                     
-                else if (address_i == 32'h104)
+                else if (address_i == 32'h4004)
                     io_mem[1] <= datapath_read[3:0];
             end
         
@@ -69,7 +69,7 @@ module memory_controller(input  logic        clk_i, rst_n_i, write_enable_i,
     assign led_o = io_mem[0];
     assign seven_seg_o = io_mem[1];
     
-    assign datapath_write_o = address_i == 32'h108 ? io_mem[2] : memory_read;
+    assign datapath_write_o = address_i == 32'h4008 ? io_mem[2] : memory_read;
     assign memory_write_o = datapath_read;
 
 endmodule
