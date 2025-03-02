@@ -27,8 +27,9 @@ module alu(input  logic [3:0]  alu_control_i,
             4'b1000:  result_o = src_a_i >> src_b_i;                                             // SRL
             4'b1001:  result_o = src_a_i >>> src_b_i;                                            // SRA
             
-            4'b1010:  result_o = src_b_i << 'd12;                                                // LUI
-            4'b1011:  result_o = src_a_i + (src_b_i << 'd12);                                    // AUIPC
+            4'b1010:  result_o = src_b_i;                                                        // LUI
+            4'b1011:  result_o = src_a_i + src_b_i;                                              // AUIPC
+            // possibly remove lui from alu and forward it directly
             
             default: result_o = 'bx;                                                             // Invalid operation
         endcase

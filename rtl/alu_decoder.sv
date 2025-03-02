@@ -10,11 +10,11 @@ module alu_decoder(input  logic       opb5_i, funct7b5_i,
         2'b00: alu_control_o = 4'b0000;                                           // j-type, load, store - add
         2'b01: case (funct3_i)
             3'b000:  alu_control_o = 4'b0100;                                     // beq - xor
-            3'b001:  alu_control_o = 4'b0100;                                     // bne - xor
+            3'b001:  alu_control_o = 4'b0100;                                     // bne - !xor
             3'b100:  alu_control_o = 4'b0101;                                     // blt - slt
-            3'b101:  alu_control_o = 4'b0101;                                     // bge - slt
+            3'b101:  alu_control_o = 4'b0101;                                     // bge - !slt
             3'b110:  alu_control_o = 4'b0110;                                     // bltu - sltu
-            3'b111:  alu_control_o = 4'b0110;                                     // bgeu - sltu
+            3'b111:  alu_control_o = 4'b0110;                                     // bgeu - !sltu
             default: alu_control_o = 4'bx;
         endcase
         2'b10: case (funct3_i)

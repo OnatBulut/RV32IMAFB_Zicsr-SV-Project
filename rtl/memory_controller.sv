@@ -58,7 +58,7 @@ module memory_controller(input  logic        clk_i, rst_n_i, write_enable_i,
                 if (address_i == 32'h100)
                     io_mem[0] <= datapath_read[3:0];
                     
-                if (address_i == 32'h104)
+                else if (address_i == 32'h104)
                     io_mem[1] <= datapath_read[3:0];
             end
         
