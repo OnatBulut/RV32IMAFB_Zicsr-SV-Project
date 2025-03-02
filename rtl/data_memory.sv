@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+// DEPRECATED
+
 module data_memory (input  logic        clk_i, write_enable_i,
                     input  logic [31:0] address_i, write_data_i,
                      

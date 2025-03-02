@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+// DEPRECATED
+
 module program_memory(input  logic [31:0] address_i,
 
                       output logic [31:0] read_data_o);
