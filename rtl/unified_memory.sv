@@ -7,7 +7,7 @@
 
 module unified_memory #(parameter NB_COL = 4,           // Specify number of columns (number of bytes)
                         parameter COL_WIDTH = 8,        // Specify column width (byte width, typically 8 or 9)
-                        parameter RAM_DEPTH = 512,      // Specify RAM depth (number of entries)
+                        parameter RAM_DEPTH = 8192,     // Specify RAM depth (number of entries)
                         parameter RAM_PERFORMANCE = "LOW_LATENCY",     // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
                         parameter INIT_FILE = "")       // Specify name/location of RAM initialization file if using one (leave blank if not)
                        (input  logic [$clog2(RAM_DEPTH)-1:0]  addr_a_i,     // Port A address bus, width determined from RAM_DEPTH
@@ -47,23 +47,23 @@ module unified_memory #(parameter NB_COL = 4,           // Specify number of col
     generate
         genvar i;
         for (i = 0; i < NB_COL; i = i+1) begin: byte_write
-            always_ff @(posedge clk_i)
+            always_ff @(negedge clk_i)
                 if (en_a_i)
                     if (we_a_i[i]) begin
                         memory[addr_a_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_a_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
                         memory_data_a[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_a_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
                     end else begin
                         memory_data_a[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= memory[addr_a_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH];
-                end
+                    end
 
-        always_ff @(posedge clk_i)
-            if (en_b_i)
-                if (we_b_i[i]) begin
-                    memory[addr_b_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_b_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
-                    memory_data_b[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_b_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
-                end else begin
-                    memory_data_b[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= memory[addr_b_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH];
-            end
+            always_ff @(negedge clk_i)
+                if (en_b_i)
+                    if (we_b_i[i]) begin
+                        memory[addr_b_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_b_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
+                        memory_data_b[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_b_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
+                    end else begin
+                        memory_data_b[(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= memory[addr_b_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH];
+                    end
         end
     endgenerate
     
