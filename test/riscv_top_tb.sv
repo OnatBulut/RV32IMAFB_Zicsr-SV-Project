@@ -20,10 +20,10 @@ module riscv_top_tb;
         
         #10 sw = 4'b101;
         
-        #16 nrst = 0;
-        #4 nrst = 1;
+        //#16 nrst = 0;
+        //#4 nrst = 1;
         
-        #8 $stop;
+        #108 $stop;
     end
 
 endmodule
