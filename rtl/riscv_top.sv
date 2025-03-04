@@ -28,8 +28,8 @@ module riscv_top(input  logic       clk_sys_i, rst_n_i,
                           .memory_write_o(write_data));
                           
     unified_memory #(.INIT_FILE("/home/onat/Documents/Github/RV32IMAFB_Zicsr-SV-Project/rtl/memfile.mem"))
-            Memory  (.addr_a_i(pc[31:2]),
-                     .addr_b_i(alu_result[31:2]),
+            Memory  (.addr_a_i(pc[14:2]),
+                     .addr_b_i(alu_result[14:2]),
                      .din_a_i(32'b0),
                      .din_b_i(write_data),
                      .clk_i(clk_sys_i),
