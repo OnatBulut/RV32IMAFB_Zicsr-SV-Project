@@ -1,11 +1,12 @@
 `timescale 1ns / 1ps
+`include "defines_header.svh"
 
 module control_unit(input  logic       clk_i, rst_n_i,
-                    input  logic [6:0] op_i,
-                    input  logic [2:0] funct3_d_i,
-                    input  logic       funct7b5_i,
                     input  logic       zero_e_i,
                     input  logic       flush_e_i,
+                    input  logic [2:0] funct3_d_i,
+                    input  logic [6:0] op_i, funct7_d_i,
+                    
                     
                     output logic       pc_src_e_o, alu_src_a_e_o, alu_src_b_e_o,
                     output logic       mem_write_m_o,
@@ -14,13 +15,13 @@ module control_unit(input  logic       clk_i, rst_n_i,
                     output logic [1:0] result_src_e_o, result_src_w_o,
                     output logic [2:0] imm_src_d_o,
                     output logic [2:0] funct3_m_o,
-                    output logic [3:0] alu_control_e_o);
+                    output logic [`ALU_CONTROL_SIZE-1:0] alu_control_e_o);
     
     logic [1:0] alu_op;
     
     logic       jump_d, branch_d, mem_write_d, alu_src_a_d, alu_src_b_d, reg_write_d, pc_target_src_d;
     logic [1:0] result_src_d;
-    logic [3:0] alu_control_d;
+    logic [`ALU_CONTROL_SIZE-1:0] alu_control_d;
     
     logic       jump_e, branch_e, mem_write_e, reg_write_e;
     logic [2:0] funct3_e;
@@ -40,7 +41,7 @@ module control_unit(input  logic       clk_i, rst_n_i,
                               .imm_src_o(imm_src_d_o));
                               
     alu_decoder ALU_Decoder(.opb5_i(op_i[5]),
-                            .funct7b5_i(funct7b5_i),
+                            .funct7_i(funct7_d_i),
                             .alu_op_i(alu_op),
                             .funct3_i(funct3_d_i),
                             .alu_control_o(alu_control_d));

@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "defines_header.svh"
 
 module riscv_core(input  logic        clk_i, rst_n_i,
                   input  logic [3:0]  sw_i,
@@ -12,14 +13,14 @@ module riscv_core(input  logic        clk_i, rst_n_i,
     logic [1:0]  forward_ae, forward_be;
     logic [1:0]  result_src_e, result_src_w;
     logic [2:0]  imm_src, funct3;
-    logic [3:0]  alu_control;
+    logic [`ALU_CONTROL_SIZE-1:0] alu_control;
     logic [31:0] instr_d, instr_e, instr_m, instr_w;
     logic [31:0] read_data_internal, write_data;
                   
     control_unit Control_Unit(.clk_i(clk_i), .rst_n_i(rst_n_i),
                               .op_i(instr_d[6:0]),
                               .funct3_d_i(instr_d[14:12]),
-                              .funct7b5_i(instr_d[30]),
+                              .funct7_d_i(instr_d[31:25]),
                               .zero_e_i(zero),
                               .flush_e_i(flush_e),
                               .pc_src_e_o(pc_src),

@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "defines_header.svh"
 
 module datapath(input  logic        clk_i, rst_n_i,
                 input  logic        pc_src_i, alu_src_a_i, alu_src_b_i, reg_write_i, pc_target_src_i,
@@ -6,7 +7,7 @@ module datapath(input  logic        clk_i, rst_n_i,
                 input  logic [1:0]  result_src_i,
                 input  logic [1:0]  forward_ae, forward_be,
                 input  logic [2:0]  imm_src_i,
-                input  logic [3:0]  alu_control_i,
+                input  logic [`ALU_CONTROL_SIZE-1:0] alu_control_i,
                 input  logic [31:0] instr_i,
                 input  logic [31:0] read_data_i,
                 
