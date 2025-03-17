@@ -1,0 +1,30 @@
+01f00193 // li	gp,31
+00005237 // lui	tp,0x5
+010000ef // jal	ra,18
+00322023 // sw	gp,0(tp)
+00022283 // lw	t0,0(tp)
+0000006f // j	14 
+00a00313 // li	t1,10
+fff30313 // addi	t1,t1,-1
+fe031ee3 // bnez	t1,1c 
+00008067 // ret
+
+/*
+https://riscvasm.lucasteske.dev/
+
+_boot:
+	li x3, 31
+    li x4, 0x5000
+    call delay
+    sw x3, 0(x4)
+    lw x5, 0(x4)
+end:
+	j end
+
+delay:
+    li x6, 10
+l:  
+    addi x6, x6, -1
+    bnez x6, l
+    ret
+*/
