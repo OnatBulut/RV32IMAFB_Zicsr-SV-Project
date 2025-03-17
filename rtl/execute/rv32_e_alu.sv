@@ -68,6 +68,8 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
     end*/
     
     always_comb begin
+        result_o = 0;
+        
         case (alu_control_i)
             ALU_ADD:    result_o = src_a_i + src_b_i;                                               // ADD
             ALU_SUB:    result_o = src_a_i - src_b_i;                                               // SUB
@@ -90,24 +92,25 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
             ALU_BINV:   result_o = src_a_i ^ (1 << src_b_i[4:0]);
             ALU_BSET:   result_o = src_a_i | (1 << src_b_i[4:0]);
             ALU_CLMUL:  begin
-                            result_o = 0;
+                            
                             for (int i = 0; i < `XLEN; i++) begin
                                 result_o = ((src_b_i >> i) & 1) ? (result_o ^ (src_a_i << i)) : result_o;
                             end
-                        end    
+                        end
+                        
             ALU_CLMULH: begin
-                            result_o = 0;
                             for (int i = 1; i < `XLEN; i++) begin
                                 result_o = ((src_b_i >> i) & 1)? (result_o ^(src_a_i >> (`XLEN - i))) : result_o;         
                             end
                             // todo (src_b_i >> i) & 1 kısmı değişkende tutulup 0. biti kontrol edilebilir.
-                        end    
+                        end
+                        
             ALU_CLMULR: begin
-                            result_o = 0;
                             for (int i = 0; i < `XLEN; i++) begin
                                 result_o = ((src_b_i >> i) & 1) ? (result_o ^ (src_a_i >> (`XLEN - i - 1))) : result_o;         
                             end
-                        end    
+                        end
+                        
             ALU_MAX:    result_o = ($signed(src_a_i) < $signed(src_b_i)) ? src_b_i : src_a_i;
                         /*
                         begin
@@ -127,13 +130,11 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
             ALU_XNOR:   result_o = ~(src_a_i ^ src_b_i);
             ALU_ZEXT_H: result_o = {16'b0, src_a_i[15:0]};
             ALU_CLZ:    begin
-                            if(src_a_i == 32'b0) begin 
+                            if (src_a_i == 32'b0) begin 
                                 result_o = `XLEN;
-                            end else if (src_a_i[`XLEN - 1] == 1) begin
-                                result_o = 0;
-                            end else begin
+                            end else if (src_a_i[`XLEN - 1] != 1) begin
                                 for (int i = (`XLEN - 1); i >= 0; i--) begin
-                                    if(src_a_i[i] == 1) begin 
+                                    if (src_a_i[i] == 1) begin 
                                         result_o = (`XLEN - 1) - i;
                                         break;
                                     end
@@ -146,22 +147,19 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
                         result_o = (`XLEN - 1) - (src_a_i ? $clog2(src_a_i) : -1);
                         */
                         begin
-                            result_o = 0;
-                            for(int i = 0; i < `XLEN; i++) begin
-                                if(src_a_i[i] == 1) begin
+                            for (int i = 0; i < `XLEN; i++) begin
+                                if (src_a_i[i] == 1) begin
                                     result_o = result_o + 1;
                                 end
                             end
                         end
                        
             ALU_CTZ:    begin
-                            if(src_a_i == 32'b0) begin
+                            if (src_a_i == 32'b0) begin
                                 result_o = `XLEN;
-                            end else if(src_a_i[0] == 1) begin
-                                result_o = 0;
-                            end else begin
+                            end else if (src_a_i[0] != 1) begin
                                 for(int i = 0; i < `XLEN; i++) begin
-                                    if(src_a_i[i] == 1) begin
+                                    if (src_a_i[i] == 1) begin
                                         result_o = i;
                                         break;
                                     end
@@ -170,7 +168,6 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
                         end
                        
             ALU_ORC_B:  begin
-                            result_o = 0;
                             for (int i = 0; i < `XLEN; i = i + 8) begin
                                 if (src_a_i[i +: 8] == 8'b00000000) begin
                                     result_o[i +: 8] = 8'b00000000;
@@ -181,7 +178,6 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
                         end 
 
             ALU_REV8:   begin
-                            result_o = 0;
                             for (int i = 0, j = `XLEN - 1; i < `XLEN; i = i + 8, j = j - 8) begin
                                 result_o[i +: 8] = src_a_i[j -: 8];  //result_o[i+7:i] = src_a_i[j-7:j];
                             end
