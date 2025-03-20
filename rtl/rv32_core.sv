@@ -38,6 +38,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic        pc_target_source;
     logic        alu_source_a, alu_source_b;
     logic [1:0]  result_source_e;
+    logic [`EXCEPTION_WIDTH-1:0] exceptions_e;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control;
     logic [31:0] instr_e;
     logic [31:0] instr_w;
@@ -63,6 +64,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .alu_source_a_o(alu_source_a),
                         .alu_source_b_o(alu_source_b),
                         .result_source_o(result_source_e),
+                        .exceptions_i(exceptions_e),
                         .alu_control_o(alu_control),
                         .read_data_1_o(read_data_1),
                         .read_data_2_o(read_data_2),
@@ -75,6 +77,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic        memory_write_m;
     logic [1:0]  result_source_m;
     logic [1:0]  forward_ae, forward_be;
+    logic [`EXCEPTION_WIDTH-1:0] exceptions_c;
     logic [31:0] instr_m;
     logic [31:0] pc_next_m;
     logic [31:0] alu_result_m;
@@ -92,6 +95,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .result_source_i(result_source_e),
                           .forward_a_i(forward_ae),
                           .forward_b_i(forward_be),
+                          .exceptions_i(exceptions_e),
                           .alu_control_i(alu_control),
                           .instr_i(instr_e),
                           .read_data_1_i(read_data_1),
@@ -104,22 +108,23 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .reg_write_o(reg_write_m),
                           .memory_write_o(memory_write_m),
                           .result_source_o(result_source_m),
+                          .exceptions_o(exceptions_c),
                           .instr_o(instr_m),
                           .pc_next_o(pc_next_m),
                           .alu_result_o(alu_result_m),
                           .write_data_o(write_data),
                           .pc_target_o(pc_target));
-    
-    // Division Unit will be removed from the ALU and be made its own out of order pipeline stage.
-    // Starting a division:
-    // - Division Unit stores the division instruction and starts the division using the values from the regfile
-    // - Division Unit outputs the in progress signal and the relevant instruction data
-    // - Hazard Unit checks if the next instruction requires the result of the division
-    //      - If the result is required, pipeline before the Execute Stage gets stalled until the division is done
-    //      - If another instruction writes to the destination of the divider before it is used, stop division and discard result
-    // - When Division Unit sends the done signal, stall the pipeline before the Execute Stage and wait a cycle,
-    //   populate the Execute/Memory pipe with relevant data and control signals of the division instruction.
-    // New hazards may occur but they may already be handled by the hazard unit, check instructions that needs the division result after a few cycles have passed
+                          
+    logic [31:0] mul_div_result;
+                          
+    rv32_mul_div Mul_Div_Unit (.clk_i(clk_i),
+                               .rst_n_i(rst_n_i),
+                               .alu_control_i(alu_control),
+                               .read_data_1_i(read_data_1),
+                               .read_data_2_i(read_data_2),
+                               .running_o(),
+                               .done_o(),
+                               .result_o(mul_div_result));
 
     logic [1:0]  result_source_w;
     logic [31:0] pc_next_w;
@@ -150,6 +155,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                               .alu_result_i(alu_result_w),
                               .read_data_i(read_data),
                               .pc_next_i(pc_next_w),
+                              .mul_div_result_i(mul_div_result),
+                              .instr_i(instr_w),
                               .result_o(writeback_result));
     
     // ZICSR Unit TBA
