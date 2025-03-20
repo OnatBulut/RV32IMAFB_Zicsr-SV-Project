@@ -4,8 +4,11 @@
 module rv32_decode (input  logic        clk_i, rst_n_i,
                     input  logic        flush_e_i,
                     input  logic        reg_write_enable_i,
+                    input  logic        fp_reg_write_enable_i,
                     input  logic [4:0]  reg_write_address_i,
+                    input  logic [4:0]  fp_reg_write_address_i,
                     input  logic [31:0] reg_write_data_i,
+                    input  logic [31:0] fp_reg_write_data_i,
                     input  logic [31:0] instr_i,
                     input  logic [31:0] pc_i, pc_next_i,
                     
@@ -16,6 +19,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o,
                     
                     output logic [31:0] read_data_1_o, read_data_2_o,
+                    output logic [31:0] fp_read_data_1_o, fp_read_data_2_o, fp_read_data_3_o,
                     output logic [31:0] instr_o,
                     output logic [31:0] pc_o, pc_next_o,
                     output logic [31:0] imm_extend_o);
@@ -68,6 +72,19 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                                         .read_data_1_o(read_data_1),
                                         .read_data_2_o(read_data_2));
 
+    logic [31:0] fp_read_data_1, fp_read_data_2, fp_read_data_3;
+
+    rv32_d_fp_register_file FP_Register_File (.clk_i(clk_i),
+                                             .write_enable_4_i(fp_reg_write_enable_i),
+                                             .read_address_1_i(instr_i[19:15]),
+                                             .read_address_2_i(instr_i[24:20]),
+                                             .read_address_3_i(instr_i[31:27]),
+                                             .write_address_4_i(fp_reg_write_address_i),
+                                             .write_data_4_i(fp_reg_write_data_i),
+                                             .read_data_1_o(fp_read_data_1),
+                                             .read_data_2_o(fp_read_data_2),
+                                             .read_data_3_o(fp_read_data_3));                                
+
     logic [31:0] imm_extend;
                                        
     rv32_d_extend Extend (.imm_src_i(imm_source),
@@ -83,6 +100,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     
     logic [31:0] instr_reg;
     logic [31:0] read_data_1_reg, read_data_2_reg;
+    logic [31:0] fp_read_data_1_reg, fp_read_data_2_reg, fp_read_data_3_reg;
     logic [31:0] pc_reg, pc_next_reg;
     logic [31:0] imm_extend_reg;
                     
@@ -102,6 +120,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             instr_reg            <= 32'b0;
             read_data_1_reg      <= 32'b0;
             read_data_2_reg      <= 32'b0;
+            fp_read_data_1_reg   <= 32'b0;
+            fp_read_data_2_reg   <= 32'b0;
+            fp_read_data_3_reg   <= 32'b0;
             pc_reg               <= 32'b0;
             pc_next_reg          <= 32'b0;
             imm_extend_reg       <= 32'b0;
@@ -120,6 +141,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             instr_reg            <= instr_i;
             read_data_1_reg      <= read_data_1;
             read_data_2_reg      <= read_data_2;
+            fp_read_data_1_reg   <= fp_read_data_1;
+            fp_read_data_2_reg   <= fp_read_data_2;
+            fp_read_data_3_reg   <= fp_read_data_3;
             pc_reg               <= pc_i;
             pc_next_reg          <= pc_next_i;
             imm_extend_reg       <= imm_extend;
@@ -140,6 +164,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     assign instr_o            = instr_reg;
     assign read_data_1_o      = read_data_1_reg;
     assign read_data_2_o      = read_data_2_reg;
+    assign fp_read_data_1_o   = fp_read_data_1_reg;
+    assign fp_read_data_2_o   = fp_read_data_2_reg;
+    assign fp_read_data_3_o   = fp_read_data_3_reg;
     assign pc_o               = pc_reg;
     assign pc_next_o          = pc_next_reg;
     assign imm_extend_o       = imm_extend_reg;
