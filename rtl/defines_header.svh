@@ -1,8 +1,9 @@
 `ifndef DEFINES_HEADER_SVH
 `define DEFINES_HEADER_SVH
 
-`define XLEN              32
+`define EXCEPTION_WIDTH   4
 `define ALU_CONTROL_WIDTH 6
+`define XLEN              32
 
 localparam logic [6:0]
     OPCODE_RESET  = 7'b000_0000,
