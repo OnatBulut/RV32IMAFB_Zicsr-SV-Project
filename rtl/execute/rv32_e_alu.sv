@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 `include "defines_header.svh"
 
-module rv32_e_alu (input  logic [5:0]  alu_control_i,
+module rv32_e_alu (input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                    input  logic [31:0] src_a_i, src_b_i,
                  
                    output logic        zero_o,
@@ -84,7 +84,7 @@ module rv32_e_alu (input  logic [5:0]  alu_control_i,
             ALU_SRL:    result_o = src_a_i >> src_b_i[4:0];                                         // SRL
             ALU_SRA:    result_o = $signed(src_a_i) >>> src_b_i[4:0];                               // SRA
             
-            ALU_PASS:   result_o = src_b_i;                                                         // LUI
+            ALU_PASS:   result_o = src_b_i;                                                         // PASSTHROUGH
             
             ALU_ANDN:   result_o = src_a_i & ~src_b_i;
             ALU_BCLR:   result_o = src_a_i & ~(1 << src_b_i[4:0]);  
