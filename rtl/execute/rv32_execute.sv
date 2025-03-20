@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 
 module rv32_execute (input  logic        clk_i, rst_n_i,
-                     input  logic        reg_write_i, memory_write_i, jump_i, branch_i,
+                     input  logic        reg_write_i, memory_write_i, memory_data_src_i, jump_i, branch_i,
                      input  logic        pc_target_source_i, alu_source_a_i, alu_source_b_i,
-                     input  logic [1:0]  result_source_i,
                      input  logic [1:0]  forward_a_i, forward_b_i,
+                     input  logic [2:0]  result_source_i,
                      input  logic [`EXCEPTION_WIDTH-1:0] exceptions_i,
                      input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                      input  logic [31:0] instr_i,
@@ -15,7 +15,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      
                      output logic        pc_source_o,
                      output logic        reg_write_o, memory_write_o,
-                     output logic [1:0]  result_source_o,
+                     output logic [2:0]  result_source_o,
                      output logic [`EXCEPTION_WIDTH-1:0] exceptions_o,
 
                      output logic [31:0] instr_o,
@@ -34,7 +34,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     assign pc_source_o = (instr_i[14] ^ instr_i[12] ^ zero) & branch_i | jump_i;
     
     // Execute Stage Datapath
-    logic [31:0] source_1, source_2;
+    logic [31:0] source_1, source_2, fp_source_2, write_data_mux_out;
     
     always_comb begin : forward_muxes
         case (forward_a_i)
@@ -54,8 +54,9 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     
     logic [31:0] source_b, source_a, alu_result;
     
-    assign source_a   = alu_source_a_i ? pc_i : source_1;
+    assign source_a = alu_source_a_i ? pc_i : source_1;
     assign source_b = alu_source_b_i ? imm_extend_i : source_2;
+    assign write_data_mux_out = memory_data_src ? source_2 : fp_source_2;
     
     rv32_e_alu ALU(.alu_control_i(alu_control_i),
                    .src_a_i(source_a),
@@ -67,7 +68,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             
     // Execute to Memory
     logic        reg_write_reg, memory_write_reg;
-    logic [1:0]  result_source_reg;
+    logic [2:0]  result_source_reg;
     logic [`EXCEPTION_WIDTH-1:0] exceptions_reg;
     
     logic [31:0] instr_reg;
@@ -79,7 +80,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
         if (!rst_n_i) begin
             reg_write_reg     <= 1'b0;
             memory_write_reg  <= 1'b0;
-            result_source_reg <= 2'b0;
+            result_source_reg <= 3'b0;
             exceptions_reg    <= 'b0;
         
             instr_reg         <= 32'b0;

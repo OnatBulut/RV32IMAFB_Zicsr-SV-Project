@@ -3,14 +3,14 @@
 module rv32_memory (input  logic        clk_i, rst_n_i,
                     input  logic        reg_write_i,
                     input  logic        memory_write_i,
-                    input  logic [1:0]  result_source_i,
+                    input  logic [2:0]  result_source_i,
                     input  logic [31:0] alu_result_i,
                     input  logic [31:0] read_data_i, write_data_i,
                     input  logic [31:0] instr_i,
                     input  logic [31:0] pc_next_i,
                     
                     output logic        reg_write_o,
-                    output logic [1:0]  result_source_o,
+                    output logic [2:0]  result_source_o,
                     
                     output logic [3:0]  memory_write_enable_o,
                     output logic [31:0] memory_data_address_o,
@@ -37,7 +37,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     
     // Memory Stage 2
     logic        reg_write_reg;
-    logic [1:0]  result_source_reg;
+    logic [2:0]  result_source_reg;
     logic [31:0] alu_result_reg;
     logic [31:0] instr_reg;
     logic [31:0] pc_next_reg;
@@ -45,7 +45,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     always_ff @(posedge clk_i, negedge rst_n_i) begin : memory_1_to_2_pipe
         if (!rst_n_i) begin
             reg_write_reg     <= 1'b0;
-            result_source_reg <= 2'b0;
+            result_source_reg <= 3'b0;
             
             alu_result_reg    <= 32'b0;
             instr_reg         <= 32'b0;
@@ -64,7 +64,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     
     // Memory to Writeback
     logic        reg_write_reg_w;
-    logic [1:0]  result_source_reg_w;
+    logic [2:0]  result_source_reg_w;
     logic [31:0] alu_result_reg_w;
     logic [31:0] read_data_reg_w;
     logic [31:0] instr_reg_w;
@@ -73,7 +73,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     always_ff @(posedge clk_i, negedge rst_n_i) begin : memory_2_to_writeback_pipe
         if (!rst_n_i) begin
             reg_write_reg_w     <= 1'b0;
-            result_source_reg_w <= 2'b0;
+            result_source_reg_w <= 3'b0;
             
             alu_result_reg_w    <= 32'b0;
             read_data_reg_w     <= 32'b0;

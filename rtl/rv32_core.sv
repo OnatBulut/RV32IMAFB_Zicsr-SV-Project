@@ -32,12 +32,12 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                       
     logic        flush_e;
     logic        reg_write_e, reg_write_w;
-    logic        memory_write_e;
+    logic        memory_write_e, memory_data_src;
     logic        jump;
     logic        branch;
     logic        pc_target_source;
     logic        alu_source_a, alu_source_b;
-    logic [1:0]  result_source_e;
+    logic [2:0]  result_source_e;
     logic [`EXCEPTION_WIDTH-1:0] exceptions_e;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control;
     logic [31:0] instr_e;
@@ -58,6 +58,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .pc_next_i(pc_next_d),
                         .reg_write_o(reg_write_e),
                         .memory_write_o(memory_write_e),
+                        .memory_data_src_o(memory_data_src),
                         .jump_o(jump),
                         .branch_o(branch),
                         .pc_target_source_o(pc_target_source),
@@ -75,18 +76,20 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     
     logic        reg_write_m;
     logic        memory_write_m;
-    logic [1:0]  result_source_m;
     logic [1:0]  forward_ae, forward_be;
+    logic [2:0]  result_source_m;
     logic [`EXCEPTION_WIDTH-1:0] exceptions_c;
     logic [31:0] instr_m;
     logic [31:0] pc_next_m;
     logic [31:0] alu_result_m;
     logic [31:0] write_data;
+    logic [31:0] fpu_result_m;
     
     rv32_execute Execute (.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
                           .reg_write_i(reg_write_e),
                           .memory_write_i(memory_write_e),
+                          .memory_data_src_i(memory_data_src),
                           .jump_i(jump),
                           .branch_i(branch),
                           .pc_target_source_i(pc_target_source),
@@ -113,7 +116,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .pc_next_o(pc_next_m),
                           .alu_result_o(alu_result_m),
                           .write_data_o(write_data),
-                          .pc_target_o(pc_target));
+                          .pc_target_o(pc_target),
+                          .fpu_result_o(fpu_result_m));
                           
     logic [31:0] mul_div_result;
                           
@@ -126,10 +130,11 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                                .done_o(),
                                .result_o(mul_div_result));
 
-    logic [1:0]  result_source_w;
+    logic [2:0]  result_source_w;
     logic [31:0] pc_next_w;
     logic [31:0] alu_result_w;
     logic [31:0] read_data;
+    logic [31:0] fpu_result_w;
 
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
@@ -141,6 +146,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .write_data_i(write_data),
                         .instr_i(instr_m),
                         .pc_next_i(pc_next_m),
+                        .fpu_result_i(fpu_result_m),
                         .reg_write_o(reg_write_w),
                         .result_source_o(result_source_w),
                         .memory_write_enable_o(memory_write_enable_o),
@@ -149,14 +155,19 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .alu_result_o(alu_result_w),
                         .read_data_o(read_data),
                         .instr_o(instr_w),
-                        .pc_next_o(pc_next_w));
+                        .pc_next_o(pc_next_w),
+                        .fpu_result_o(fpu_result_w));
     
-    rv32_writeback Writeback (.result_source_i(result_source_w),
+    rv32_writeback Writeback (.instr_source_i(1'b0),
+                              .result_source_i(result_source_w),
+                              .instr_i(instr_w),
+                              .mul_div_instr_i(31'b0),
                               .alu_result_i(alu_result_w),
                               .read_data_i(read_data),
                               .pc_next_i(pc_next_w),
                               .mul_div_result_i(mul_div_result),
-                              .instr_i(instr_w),
+                              .fpu_result_i(fpu_result_w),
+                              
                               .result_o(writeback_result));
     
     // ZICSR Unit TBA

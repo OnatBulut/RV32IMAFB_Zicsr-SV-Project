@@ -1,15 +1,15 @@
 `timescale 1ns / 1ps
 `include "defines_header.svh"
 
-module rv32_d_alu_decoder (input  logic [1:0]  alu_op_i,
+module rv32_d_alu_decoder (input  logic [2:0]  alu_op_i,
                            input  logic [31:0] instr_i,
 
                            output logic        valid_op_o,
                            output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o);
                    
     always_comb case (alu_op_i)
-        2'b00: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                        // j-type, load, store - add
-        2'b01: case (instr_i[14:12])
+        3'b000: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                        // j-type, load, store - add
+        3'b001: case (instr_i[14:12])
             3'b000:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // beq - xor
             3'b001:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // bne - !xor
             3'b100:  begin alu_control_o = ALU_SLT;  valid_op_o = 1'b1; end                                 // blt - slt
@@ -18,7 +18,7 @@ module rv32_d_alu_decoder (input  logic [1:0]  alu_op_i,
             3'b111:  begin alu_control_o = ALU_SLTU; valid_op_o = 1'b1; end                                 // bgeu - !sltu
             default: begin alu_control_o = 'bx;      valid_op_o = 1'b0; end
         endcase
-        2'b10: casex ({instr_i[5], instr_i[31:25], instr_i[24:20], instr_i[14:12]})
+        3'b010: casex ({instr_i[5], instr_i[31:25], instr_i[24:20], instr_i[14:12]})
             // instr_i[5] (opcode bit 5) is used to differentiate between R and I type instructions
             
             // RV32I ALU Instructions
@@ -88,7 +88,8 @@ module rv32_d_alu_decoder (input  logic [1:0]  alu_op_i,
             
             default:                 begin alu_control_o = 'bx;        valid_op_o = 1'b0; end
         endcase
-        2'b11:   begin alu_control_o = instr_i[5] ? ALU_PASS : ALU_ADD; valid_op_o = 1'b1; end              // lui : auipc
+        3'b011:   begin alu_control_o = instr_i[5] ? ALU_PASS : ALU_ADD; valid_op_o = 1'b1; end              // lui : auipc
+        3'b100:   ;
         default: begin alu_control_o = 'bx; valid_op_o = 1'b0; end
     endcase
 

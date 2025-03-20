@@ -12,9 +12,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     input  logic [31:0] instr_i,
                     input  logic [31:0] pc_i, pc_next_i,
                     
-                    output logic        reg_write_o, memory_write_o, jump_o, branch_o,
+                    output logic        reg_write_o, memory_write_o, memory_data_src_o, jump_o, branch_o,
                     output logic        pc_target_source_o, alu_source_a_o, alu_source_b_o,
-                    output logic [1:0]  result_source_o,
+                    output logic [2:0]  result_source_o,
                     output logic [`EXCEPTION_WIDTH-1:0] exceptions_o,
                     output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o,
                     
@@ -26,10 +26,10 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     
     // Decode Stage Control
     logic        valid_instr, valid_op, system_noncsr;
-    logic        reg_write, memory_write, jump, branch, pc_target_source;
+    logic        reg_write, fp_reg_write, memory_write, memory_data_src, jump, branch, pc_target_source;
     logic        alu_source_a, alu_source_b;
-    logic [1:0]  alu_op;
-    logic [1:0]  result_source;
+    logic [2:0]  alu_op;
+    logic [2:0]  result_source;
     logic [2:0]  imm_source;
     logic [`EXCEPTION_WIDTH-1:0] exceptions;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control;
@@ -39,9 +39,11 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                                       .branch_o(branch),
                                       .jump_o(jump),
                                       .mem_write_o(memory_write),
+                                      .mem_data_src_o(memory_data_src),
                                       .alu_src_a_o(alu_source_a),
                                       .alu_src_b_o(alu_source_b),
                                       .reg_write_o(reg_write),
+                                      .fp_reg_write_o(fp_reg_write),
                                       .pc_target_src_o(pc_target_source),
                                       .result_src_o(result_source),
                                       .alu_op_o(alu_op),
@@ -92,9 +94,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                           .imm_ext_o(imm_extend));
                   
     // Decode to Execute
-    logic        reg_write_reg, memory_write_reg, jump_reg, branch_reg, pc_target_source_reg;
+    logic        reg_write_reg, memory_write_reg, memory_data_src_reg, jump_reg, branch_reg, pc_target_source_reg;
     logic        alu_source_a_reg, alu_source_b_reg;
-    logic [1:0]  result_source_reg;
+    logic [2:0]  result_source_reg;
     logic [`EXCEPTION_WIDTH-1:0] exceptions_reg;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control_reg;
     
@@ -108,12 +110,13 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
         if (!rst_n_i || flush_e_i) begin
             reg_write_reg        <= 1'b0;
             memory_write_reg     <= 1'b0;
+            memory_data_src_reg  <= 1'b0;
             jump_reg             <= 1'b0;
             branch_reg           <= 1'b0;
             pc_target_source_reg <= 1'b0;
             alu_source_a_reg     <= 1'b0;
             alu_source_b_reg     <= 1'b0;
-            result_source_reg    <= 2'b0;
+            result_source_reg    <= 3'b0;
             exceptions_reg       <= 'b0;
             alu_control_reg      <= 'b0;
         
@@ -129,6 +132,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
         end else begin
             reg_write_reg        <= reg_write;
             memory_write_reg     <= memory_write;
+            memory_data_src_reg  <= memory_data_src;
             jump_reg             <= jump;
             branch_reg           <= branch;
             pc_target_source_reg <= pc_target_source;
@@ -152,6 +156,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     
     assign reg_write_o        = reg_write_reg;
     assign memory_write_o     = memory_write_reg;
+    assign memory_data_src_o  = memory_data_src_reg;
     assign jump_o             = jump_reg;
     assign branch_o           = branch_reg;
     assign pc_target_source_o = pc_target_source_reg;
