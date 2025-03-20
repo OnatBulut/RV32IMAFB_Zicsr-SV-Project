@@ -12,6 +12,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     output logic        reg_write_o, memory_write_o, jump_o, branch_o,
                     output logic        pc_target_source_o, alu_source_a_o, alu_source_b_o,
                     output logic [1:0]  result_source_o,
+                    output logic [`EXCEPTION_WIDTH-1:0] exceptions_o,
                     output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o,
                     
                     output logic [31:0] read_data_1_o, read_data_2_o,
@@ -20,14 +21,17 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     output logic [31:0] imm_extend_o);
                     
     // Decode Stage Control
+    logic        valid_instr, valid_op, system_noncsr;
     logic        reg_write, memory_write, jump, branch, pc_target_source;
     logic        alu_source_a, alu_source_b;
     logic [1:0]  alu_op;
     logic [1:0]  result_source;
     logic [2:0]  imm_source;
+    logic [`EXCEPTION_WIDTH-1:0] exceptions;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control;
     
     rv32_d_main_decoder Main_Decoder (.opcode_i(instr_i[6:0]),
+                                      .valid_instr_o(valid_instr),
                                       .branch_o(branch),
                                       .jump_o(jump),
                                       .mem_write_o(memory_write),
@@ -40,9 +44,18 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                                       .imm_src_o(imm_source));
                                      
     rv32_d_alu_decoder ALU_Decoder (.alu_op_i(alu_op),
+                                    .valid_op_o(valid_op),
                                     .instr_i(instr_i),
                                     .alu_control_o(alu_control));
-    
+                                    
+    assign system_noncsr = instr_i[6:0] == OPCODE_SYSTEM && instr_i[14:12] == 0;
+    assign exceptions = {
+        (system_noncsr && instr_i[21:20] == 2'b10), // EXCEPTION_MRET    at bit 3
+        (system_noncsr && instr_i[21:20] == 2'b01), // EXCEPTION_EBREAK  at bit 2
+        (system_noncsr && instr_i[21:20] == 2'b00), // EXCEPTION_ECALL   at bit 1
+        (!valid_instr || !valid_op)                 // EXCEPTION_ILLEGAL at bit 0
+    };
+                                    
     // Decode Stage Datapath
     logic [31:0] read_data_1, read_data_2;
     
@@ -65,6 +78,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     logic        reg_write_reg, memory_write_reg, jump_reg, branch_reg, pc_target_source_reg;
     logic        alu_source_a_reg, alu_source_b_reg;
     logic [1:0]  result_source_reg;
+    logic [`EXCEPTION_WIDTH-1:0] exceptions_reg;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control_reg;
     
     logic [31:0] instr_reg;
@@ -82,6 +96,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             alu_source_a_reg     <= 1'b0;
             alu_source_b_reg     <= 1'b0;
             result_source_reg    <= 2'b0;
+            exceptions_reg       <= 'b0;
             alu_control_reg      <= 'b0;
         
             instr_reg            <= 32'b0;
@@ -99,6 +114,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             alu_source_a_reg     <= alu_source_a;
             alu_source_b_reg     <= alu_source_b;
             result_source_reg    <= result_source;
+            exceptions_reg       <= exceptions;
             alu_control_reg      <= alu_control;
             
             instr_reg            <= instr_i;
@@ -118,6 +134,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     assign alu_source_a_o     = alu_source_a_reg;
     assign alu_source_b_o     = alu_source_b_reg;
     assign result_source_o    = result_source_reg;
+    assign exceptions_o       = exceptions_reg;
     assign alu_control_o      = alu_control_reg;
     
     assign instr_o            = instr_reg;

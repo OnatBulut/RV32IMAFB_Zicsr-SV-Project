@@ -5,6 +5,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      input  logic        pc_target_source_i, alu_source_a_i, alu_source_b_i,
                      input  logic [1:0]  result_source_i,
                      input  logic [1:0]  forward_a_i, forward_b_i,
+                     input  logic [`EXCEPTION_WIDTH-1:0] exceptions_i,
                      input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                      input  logic [31:0] instr_i,
                      input  logic [31:0] read_data_1_i, read_data_2_i,
@@ -15,7 +16,8 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      output logic        pc_source_o,
                      output logic        reg_write_o, memory_write_o,
                      output logic [1:0]  result_source_o,
-                     
+                     output logic [`EXCEPTION_WIDTH-1:0] exceptions_o,
+
                      output logic [31:0] instr_o,
                      output logic [31:0] pc_next_o,
                      output logic [31:0] alu_result_o,
@@ -66,6 +68,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     // Execute to Memory
     logic        reg_write_reg, memory_write_reg;
     logic [1:0]  result_source_reg;
+    logic [`EXCEPTION_WIDTH-1:0] exceptions_reg;
     
     logic [31:0] instr_reg;
     logic [31:0] pc_next_reg;
@@ -77,6 +80,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             reg_write_reg     <= 1'b0;
             memory_write_reg  <= 1'b0;
             result_source_reg <= 2'b0;
+            exceptions_reg    <= 'b0;
         
             instr_reg         <= 32'b0;
             pc_next_reg       <= 32'b0;
@@ -86,6 +90,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             reg_write_reg     <= reg_write_i;
             memory_write_reg  <= memory_write_i;
             result_source_reg <= result_source_i;
+            exceptions_reg    <= exceptions_i;
             
             instr_reg         <= instr_i;
             pc_next_reg       <= pc_next_i;
@@ -97,6 +102,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     assign reg_write_o     = reg_write_reg;
     assign memory_write_o  = memory_write_reg;
     assign result_source_o = result_source_reg;
+    assign exceptions_o    = exceptions_reg;
     
     assign instr_o         = instr_reg;
     assign pc_next_o       = pc_next_reg;
