@@ -3,7 +3,7 @@
 module rv32_writeback (input  logic        instr_source_i,
                        input  logic [2:0]  result_source_i,
                        input  logic [31:0] instr_i,
-                       input  logic [31:0] muldiv_instr_i,
+                       input  logic [31:0] mul_div_instr_i,
                        input  logic [31:0] alu_result_i,
                        input  logic [31:0] read_data_i,
                        input  logic [31:0] pc_next_i,
@@ -13,7 +13,7 @@ module rv32_writeback (input  logic        instr_source_i,
                        output logic [31:0] instr_o,
                        output logic [31:0] result_o);
                        
-    assign instr_o = instr_source_i ? muldiv_instr_i : instr_i;
+    assign instr_o = instr_source_i ? mul_div_instr_i : instr_i;
                        
     always_comb begin : result_mux
         case (result_source_i)
