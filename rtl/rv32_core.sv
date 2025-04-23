@@ -43,6 +43,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic [31:0] instr_e;
     logic [31:0] instr_w;
     logic [31:0] read_data_1, read_data_2;
+    logic [31:0] fp_read_data_1, fp_read_data_2, fp_read_data_3;
     logic [31:0] pc_e, pc_next_e;
     logic [31:0] writeback_result;
     logic [31:0] immediate_extend;
@@ -65,10 +66,13 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .alu_source_a_o(alu_source_a),
                         .alu_source_b_o(alu_source_b),
                         .result_source_o(result_source_e),
-                        .exceptions_i(exceptions_e),
+                        .exceptions_o(exceptions_e),
                         .alu_control_o(alu_control),
                         .read_data_1_o(read_data_1),
                         .read_data_2_o(read_data_2),
+                        .fp_read_data_1_o(fp_read_data_1),
+                        .fp_read_data_2_o(fp_read_data_2),
+                        .fp_read_data_3_o(fp_read_data_3),
                         .instr_o(instr_e),
                         .pc_o(pc_e),
                         .pc_next_o(pc_next_e),
@@ -103,6 +107,9 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .instr_i(instr_e),
                           .read_data_1_i(read_data_1),
                           .read_data_2_i(read_data_2),
+                          .fp_read_data_1_i(fp_read_data_1),
+                          .fp_read_data_2_i(fp_read_data_2),
+                          .fp_read_data_3_i(fp_read_data_3),
                           .pc_i(pc_e),
                           .pc_next_i(pc_next_e),
                           .imm_extend_i(immediate_extend),

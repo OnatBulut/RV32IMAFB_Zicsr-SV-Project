@@ -9,6 +9,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                      input  logic [31:0] instr_i,
                      input  logic [31:0] read_data_1_i, read_data_2_i,
+                     input  logic [31:0] fp_read_data_1_i, fp_read_data_2_i, fp_read_data_3_i,
                      input  logic [31:0] pc_i, pc_next_i,
                      input  logic [31:0] imm_extend_i,
                      input  logic [31:0] forwarded_res_w_i,
@@ -22,7 +23,8 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      output logic [31:0] pc_next_o,
                      output logic [31:0] alu_result_o,
                      output logic [31:0] write_data_o,
-                     output logic [31:0] pc_target_o);
+                     output logic [31:0] pc_target_o,
+                     output logic [31:0] fpu_result_o);
 
     // Execute Stage Control
     logic zero;
@@ -52,17 +54,23 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
         endcase
     end
     
-    logic [31:0] source_b, source_a, alu_result;
+    logic [31:0] source_b, source_a, alu_result, fpu_result;
     
     assign source_a = alu_source_a_i ? pc_i : source_1;
     assign source_b = alu_source_b_i ? imm_extend_i : source_2;
-    assign write_data_mux_out = memory_data_src ? source_2 : fp_source_2;
+    assign write_data_mux_out = memory_data_src_i ? fp_source_2 : source_2;
     
     rv32_e_alu ALU(.alu_control_i(alu_control_i),
                    .src_a_i(source_a),
                    .src_b_i(source_b),
                    .zero_o(zero),
                    .result_o(alu_result));
+                   
+    rv32_e_fpu FPU(.fpu_control_i(alu_control_i),
+                   .src_a_i(fp_read_data_1_i),
+                   .src_b_i(fp_read_data_2_i),
+                   .src_c_i(fp_read_data_3_i),
+                   .result_o(fpu_result));
             
     assign pc_target_o = (pc_target_source_i ? source_a : pc_i) + imm_extend_i;
             
@@ -75,6 +83,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     logic [31:0] pc_next_reg;
     logic [31:0] alu_result_reg;
     logic [31:0] write_data_reg;
+    logic [31:0] fpu_result_reg;
                     
     always_ff @(posedge clk_i, negedge rst_n_i) begin : execute_to_memory_pipe
         if (!rst_n_i) begin
@@ -87,6 +96,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             pc_next_reg       <= 32'b0;
             alu_result_reg    <= 32'b0;
             write_data_reg    <= 32'b0;
+            fpu_result_reg    <= 32'b0;
         end else begin
             reg_write_reg     <= reg_write_i;
             memory_write_reg  <= memory_write_i;
@@ -96,7 +106,8 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             instr_reg         <= instr_i;
             pc_next_reg       <= pc_next_i;
             alu_result_reg    <= alu_result;
-            write_data_reg    <= source_2;
+            write_data_reg    <= write_data_mux_out;
+            fpu_result_reg    <= fpu_result;
         end
     end
     
@@ -109,5 +120,6 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
     assign pc_next_o       = pc_next_reg;
     assign alu_result_o    = alu_result_reg;
     assign write_data_o    = write_data_reg;
+    assign fpu_result_o    = fpu_result_reg;
 
 endmodule

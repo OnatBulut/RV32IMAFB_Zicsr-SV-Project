@@ -8,6 +8,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
                     input  logic [31:0] read_data_i, write_data_i,
                     input  logic [31:0] instr_i,
                     input  logic [31:0] pc_next_i,
+                    input  logic [31:0] fpu_result_i,
                     
                     output logic        reg_write_o,
                     output logic [2:0]  result_source_o,
@@ -19,7 +20,8 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
                     output logic [31:0] alu_result_o,
                     output logic [31:0] read_data_o,
                     output logic [31:0] instr_o,
-                    output logic [31:0] pc_next_o);
+                    output logic [31:0] pc_next_o,
+                    output logic [31:0] fpu_result_o);
                     
     logic [31:0] read_data_m2;
 
@@ -69,6 +71,8 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     logic [31:0] read_data_reg_w;
     logic [31:0] instr_reg_w;
     logic [31:0] pc_next_reg_w;
+    logic [31:0] fpu_result_reg;
+
 
     always_ff @(posedge clk_i, negedge rst_n_i) begin : memory_2_to_writeback_pipe
         if (!rst_n_i) begin
@@ -79,6 +83,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
             read_data_reg_w     <= 32'b0;
             instr_reg_w         <= 32'b0;
             pc_next_reg_w       <= 32'b0;
+            fpu_result_reg      <= 32'b0;
         end else begin
             reg_write_reg_w     <= reg_write_reg;
             result_source_reg_w <= result_source_reg;
@@ -87,6 +92,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
             read_data_reg_w     <= read_data_m2;
             instr_reg_w         <= instr_reg;
             pc_next_reg_w       <= pc_next_reg;
+            fpu_result_reg      <= fpu_result_i;
         end
     end
     
@@ -97,5 +103,6 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     assign read_data_o     = read_data_reg_w;
     assign instr_o         = instr_reg_w;
     assign pc_next_o       = pc_next_reg_w;
+    assign fpu_result_o    = fpu_result_reg;
 
 endmodule
