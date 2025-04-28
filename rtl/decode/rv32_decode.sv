@@ -6,13 +6,11 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                     input  logic        reg_write_enable_i,
                     input  logic        fp_reg_write_enable_i,
                     input  logic [4:0]  reg_write_address_i,
-                    input  logic [4:0]  fp_reg_write_address_i,
                     input  logic [31:0] reg_write_data_i,
-                    input  logic [31:0] fp_reg_write_data_i,
                     input  logic [31:0] instr_i,
                     input  logic [31:0] pc_i, pc_next_i,
                     
-                    output logic        reg_write_o, memory_write_o, memory_data_src_o, jump_o, branch_o,
+                    output logic        reg_write_o, fp_reg_write_o, memory_write_o, memory_data_src_o, jump_o, branch_o,
                     output logic        pc_target_source_o, alu_source_a_o, alu_source_b_o,
                     output logic [2:0]  result_source_o,
                     output logic [`EXCEPTION_WIDTH-1:0] exceptions_o,
@@ -81,8 +79,8 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                                              .read_address_1_i(instr_i[19:15]),
                                              .read_address_2_i(instr_i[24:20]),
                                              .read_address_3_i(instr_i[31:27]),
-                                             .write_address_4_i(fp_reg_write_address_i),
-                                             .write_data_4_i(fp_reg_write_data_i),
+                                             .write_address_4_i(reg_write_address_i),
+                                             .write_data_4_i(reg_write_data_i),
                                              .read_data_1_o(fp_read_data_1),
                                              .read_data_2_o(fp_read_data_2),
                                              .read_data_3_o(fp_read_data_3));                                
@@ -94,7 +92,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
                           .imm_ext_o(imm_extend));
                   
     // Decode to Execute
-    logic        reg_write_reg, memory_write_reg, memory_data_src_reg, jump_reg, branch_reg, pc_target_source_reg;
+    logic        reg_write_reg, fp_reg_write_reg, memory_write_reg, memory_data_src_reg, jump_reg, branch_reg, pc_target_source_reg;
     logic        alu_source_a_reg, alu_source_b_reg;
     logic [2:0]  result_source_reg;
     logic [`EXCEPTION_WIDTH-1:0] exceptions_reg;
@@ -109,6 +107,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     always_ff @(posedge clk_i, negedge rst_n_i) begin : decode_to_execute_pipe
         if (!rst_n_i || flush_e_i) begin
             reg_write_reg        <= 1'b0;
+            fp_reg_write_reg     <= 1'b0;
             memory_write_reg     <= 1'b0;
             memory_data_src_reg  <= 1'b0;
             jump_reg             <= 1'b0;
@@ -131,6 +130,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             imm_extend_reg       <= 32'b0;
         end else begin
             reg_write_reg        <= reg_write;
+            fp_reg_write_reg     <= fp_reg_write;
             memory_write_reg     <= memory_write;
             memory_data_src_reg  <= memory_data_src;
             jump_reg             <= jump;
@@ -155,6 +155,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     end
     
     assign reg_write_o        = reg_write_reg;
+    assign fp_reg_write_o     = fp_reg_write_reg;
     assign memory_write_o     = memory_write_reg;
     assign memory_data_src_o  = memory_data_src_reg;
     assign jump_o             = jump_reg;

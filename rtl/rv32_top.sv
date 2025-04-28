@@ -26,8 +26,8 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
                      .RAM_DEPTH(8192),                     // Specify RAM depth (number of entries)
                      .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
                      .INIT_FILE("memfile.mem"))            // Specify name/location of RAM initialization file if using one (leave blank if not)
-               RAM (.addr_a_i(instr_address[15:2]),   // Port A address bus, width determined from RAM_DEPTH
-                    .addr_b_i(data_address[15:2]),    // Port B address bus, width determined from RAM_DEPTH
+               RAM (.addr_a_i(instr_address[14:2]),   // Port A address bus, width determined from RAM_DEPTH
+                    .addr_b_i(data_address[14:2]),    // Port B address bus, width determined from RAM_DEPTH
                     .din_a_i(32'b0),            // Port A RAM input data, width determined from NB_COL*COL_WIDTH
                     .din_b_i(write_data),       // Port B RAM input data, width determined from NB_COL*COL_WIDTH
                     .clk_a_i(clk_sys_i),        // Clock

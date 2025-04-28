@@ -134,7 +134,7 @@ task automatic fp32_sub(
     end
 endtask
 */
-task automatic fp32_mul(
+/*task automatic fp32_mul(
     input  logic [31:0] a,
     input  logic [31:0] b,
     output logic [31:0] result
@@ -268,6 +268,7 @@ task automatic fp32_fma(
         result = tmp_result;
     end
 endtask
+*/
 
 /* 
 task automatic fp32_fma(
@@ -553,14 +554,14 @@ always_comb begin
 
         ALU_FADD:    fp32_add(src_a_i, src_b_i, result_o);
         ALU_FSUB:    fp32_sub(src_a_i, src_b_i, result_o);
-        ALU_FMUL:    fp32_mul(src_a_i, src_b_i, result_o);
-        ALU_FDIV:    fp32_div(src_a_i, src_b_i, result_o);
-        ALU_FSQRT:   fp32_sqrt(src_a_i, result_o);
+        //ALU_FMUL:    fp32_mul(src_a_i, src_b_i, result_o);
+        //ALU_FDIV:    fp32_div(src_a_i, src_b_i, result_o);
+        //ALU_FSQRT:   fp32_sqrt(src_a_i, result_o);
         
-        ALU_FMADD:  fp32_fma(src_a_i, src_b_i, src_c_i, 0, 0, result_o);
-        ALU_FMSUB:  fp32_fma(src_a_i, src_b_i, src_c_i, 0, 1, result_o);
-        ALU_FNMSUB: fp32_fma(src_a_i, src_b_i, src_c_i, 1, 1, result_o);
-        ALU_FNMADD: fp32_fma(src_a_i, src_b_i, src_c_i, 1, 0, result_o);
+        //ALU_FMADD:  fp32_fma(src_a_i, src_b_i, src_c_i, 0, 0, result_o);
+        //ALU_FMSUB:  fp32_fma(src_a_i, src_b_i, src_c_i, 0, 1, result_o);
+        //ALU_FNMSUB: fp32_fma(src_a_i, src_b_i, src_c_i, 1, 1, result_o);
+        //ALU_FNMADD: fp32_fma(src_a_i, src_b_i, src_c_i, 1, 0, result_o);
 
         ALU_FSGNJ:   result_o = {src_b_i[31], src_a_i[30:0]};
         ALU_FSGNJN:  result_o = {~src_b_i[31], src_a_i[30:0]};

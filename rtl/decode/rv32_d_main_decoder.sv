@@ -23,7 +23,7 @@ module rv32_d_main_decoder (input  logic [6:0] opcode_i,
             OPCODE_J_TYPE:   begin control = 18'b1_0_011_0_0_0_0_010_0_000_1_0; valid_instr_o = 1'b1; end  // J-type
             OPCODE_SYSTEM:   begin control = 18'b0;                             valid_instr_o = 1'b1; end  // I-type / System 14'b?_000_0_0_0_11_?_??_?_?
             OPCODE_LOAD_FP:  begin control = 18'b0_1_000_0_1_0_1_001_0_000_0_0; valid_instr_o = 1'b1; end
-            OPCODE_STORE_FP: begin control = 18'b0_0_001_0_1_0_1_000_0_000_0_0; valid_instr_o = 1'b1; end
+            OPCODE_STORE_FP: begin control = 18'b0_0_001_0_1_1_1_000_0_000_0_0; valid_instr_o = 1'b1; end
             OPCODE_MADD:     begin control = 18'b0_1_xxx_0_0_0_0_100_0_100_0_0; valid_instr_o = 1'b1; end
             OPCODE_MSUB:     begin control = 18'b0_1_xxx_0_0_0_0_100_0_100_0_0; valid_instr_o = 1'b1; end
             OPCODE_NMSUB:    begin control = 18'b0_1_xxx_0_0_0_0_100_0_100_0_0; valid_instr_o = 1'b1; end

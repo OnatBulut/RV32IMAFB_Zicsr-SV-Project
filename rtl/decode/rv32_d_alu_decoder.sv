@@ -89,7 +89,7 @@ module rv32_d_alu_decoder (input  logic [2:0]  alu_op_i,
             default:                 begin alu_control_o = 'bx;        valid_op_o = 1'b0; end
         endcase
         3'b011:   begin alu_control_o = instr_i[5] ? ALU_PASS : ALU_ADD; valid_op_o = 1'b1; end              // lui : auipc
-        3'b100:   ;
+        3'b100:   valid_op_o = 1'b0;
         default: begin alu_control_o = 'bx; valid_op_o = 1'b0; end
     endcase
 
