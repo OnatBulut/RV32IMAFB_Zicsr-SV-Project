@@ -32,6 +32,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                       
     logic        flush_e;
     logic        reg_write_e, reg_write_w;
+    logic        fp_reg_write_e, fp_reg_write_w;
     logic        memory_write_e, memory_data_src;
     logic        jump;
     logic        branch;
@@ -52,12 +53,14 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .rst_n_i(rst_n_i),
                         .flush_e_i(flush_e),
                         .reg_write_enable_i(reg_write_w),
+                        .fp_reg_write_enable_i(fp_reg_write_w),
                         .reg_write_address_i(instr_w[11:7]),
                         .reg_write_data_i(writeback_result),
                         .instr_i(instr_d),
                         .pc_i(pc_d),
                         .pc_next_i(pc_next_d),
                         .reg_write_o(reg_write_e),
+                        .fp_reg_write_o(fp_reg_write_e),
                         .memory_write_o(memory_write_e),
                         .memory_data_src_o(memory_data_src),
                         .jump_o(jump),
@@ -78,7 +81,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .pc_next_o(pc_next_e),
                         .imm_extend_o(immediate_extend));
     
-    logic        reg_write_m;
+    logic        reg_write_m, fp_reg_write_m;
     logic        memory_write_m;
     logic [1:0]  forward_ae, forward_be;
     logic [2:0]  result_source_m;
@@ -92,6 +95,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     rv32_execute Execute (.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
                           .reg_write_i(reg_write_e),
+                          .fp_reg_write_i(fp_reg_write_e),
                           .memory_write_i(memory_write_e),
                           .memory_data_src_i(memory_data_src),
                           .jump_i(jump),
@@ -116,6 +120,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .forwarded_res_w_i(writeback_result),
                           .pc_source_o(pc_source),
                           .reg_write_o(reg_write_m),
+                          .fp_reg_write_o(fp_reg_write_m),
                           .memory_write_o(memory_write_m),
                           .result_source_o(result_source_m),
                           .exceptions_o(exceptions_c),
@@ -146,6 +151,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
                         .reg_write_i(reg_write_m),
+                        .fp_reg_write_i(fp_reg_write_m),
                         .memory_write_i(memory_write_m),
                         .result_source_i(result_source_m),
                         .alu_result_i(alu_result_m),
@@ -155,6 +161,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .pc_next_i(pc_next_m),
                         .fpu_result_i(fpu_result_m),
                         .reg_write_o(reg_write_w),
+                        .fp_reg_write_o(fp_reg_write_w),
                         .result_source_o(result_source_w),
                         .memory_write_enable_o(memory_write_enable_o),
                         .memory_data_address_o(memory_data_address_o),
@@ -173,8 +180,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                               .read_data_i(read_data),
                               .pc_next_i(pc_next_w),
                               .mul_div_result_i(mul_div_result),
-                              .fpu_result_i(fpu_result_w),
-                              
+                              .fpu_result_i(fpu_result_w),                              
                               .result_o(writeback_result));
     
     // ZICSR Unit TBA
