@@ -180,7 +180,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                               .read_data_i(read_data),
                               .pc_next_i(pc_next_w),
                               .mul_div_result_i(mul_div_result),
-                              .fpu_result_i(fpu_result_w),                              
+                              .fpu_result_i(fpu_result_w),
+                              .instr_o(),                             
                               .result_o(writeback_result));
     
     // ZICSR Unit TBA
