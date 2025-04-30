@@ -26,8 +26,8 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     logic [31:0] read_data_m2;
 
     rv32_m_memory_controller Memory_Controller (.write_enable_i(memory_write_i),
+                                                .address_2lsb_i(alu_result_i[1:0]),
                                                 .funct3_i(instr_i[14:12]),
-                                                .address_i(alu_result_i),
                                                 .datapath_read_i(write_data_i),
                                                 .memory_read_i(read_data_i),
                                                 .write_enable_o(memory_write_enable_o),
