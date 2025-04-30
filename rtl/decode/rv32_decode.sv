@@ -26,9 +26,9 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     logic        valid_instr, valid_op, system_noncsr;
     logic        reg_write, fp_reg_write, memory_write, memory_data_src, jump, branch, pc_target_source;
     logic        alu_source_a, alu_source_b;
-    logic [2:0]  alu_op;
     logic [2:0]  result_source;
     logic [2:0]  imm_source;
+    logic [3:0]  alu_op;
     logic [`EXCEPTION_WIDTH-1:0] exceptions;
     logic [`ALU_CONTROL_WIDTH-1:0] alu_control;
     

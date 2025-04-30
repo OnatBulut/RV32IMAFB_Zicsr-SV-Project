@@ -1,15 +1,15 @@
 `timescale 1ns / 1ps
 `include "defines_header.svh"
 
-module rv32_d_alu_decoder (input  logic [2:0]  alu_op_i,
+module rv32_d_alu_decoder (input  logic [3:0]  alu_op_i,
                            input  logic [31:0] instr_i,
 
                            output logic        valid_op_o,
                            output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o);
                    
     always_comb case (alu_op_i)
-        3'b000: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                        // j-type, load, store - add
-        3'b001: case (instr_i[14:12])
+        4'b0000: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                        // j-type, load, store - add
+        4'b0001: case (instr_i[14:12])
             3'b000:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // beq - xor
             3'b001:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // bne - !xor
             3'b100:  begin alu_control_o = ALU_SLT;  valid_op_o = 1'b1; end                                 // blt - slt
@@ -18,7 +18,7 @@ module rv32_d_alu_decoder (input  logic [2:0]  alu_op_i,
             3'b111:  begin alu_control_o = ALU_SLTU; valid_op_o = 1'b1; end                                 // bgeu - !sltu
             default: begin alu_control_o = 'bx;      valid_op_o = 1'b0; end
         endcase
-        3'b010: casex ({instr_i[5], instr_i[31:25], instr_i[24:20], instr_i[14:12]})
+        4'b0010: casex ({instr_i[5], instr_i[31:25], instr_i[24:20], instr_i[14:12]})
             // instr_i[5] (opcode bit 5) is used to differentiate between R and I type instructions
             
             // RV32I ALU Instructions
@@ -88,8 +88,35 @@ module rv32_d_alu_decoder (input  logic [2:0]  alu_op_i,
             
             default:                 begin alu_control_o = 'bx;        valid_op_o = 1'b0; end
         endcase
-        3'b011:   begin alu_control_o = instr_i[5] ? ALU_PASS : ALU_ADD; valid_op_o = 1'b1; end              // lui : auipc
-        3'b100:   valid_op_o = 1'b0;
+        4'b0011: begin alu_control_o = instr_i[5] ? ALU_PASS : ALU_ADD; valid_op_o = 1'b1; end              // lui : auipc
+        4'b0100: casex ({instr_i[31:25], instr_i[24:20], instr_i[14:12]})
+            15'b0000000_xxxxx_xxx: begin alu_control_o = ALU_FADD;    valid_op_o = 1'b1; end                // fadd.s
+            15'b0000100_xxxxx_xxx: begin alu_control_o = ALU_FSUB;    valid_op_o = 1'b1; end                // fsub.s
+            15'b0001000_xxxxx_xxx: begin alu_control_o = ALU_FMUL;    valid_op_o = 1'b1; end                // fmul.s
+            15'b0001100_xxxxx_xxx: begin alu_control_o = ALU_FDIV;    valid_op_o = 1'b1; end                // fdiv.s
+            15'b0101100_00000_xxx: begin alu_control_o = ALU_FSQRT;   valid_op_o = 1'b1; end                // fsqrt.s
+            15'b0010000_xxxxx_000: begin alu_control_o = ALU_FSGNJ;   valid_op_o = 1'b1; end                // fsgnj.s
+            15'b0010000_xxxxx_001: begin alu_control_o = ALU_FSGNJN;  valid_op_o = 1'b1; end                // fsgnjn.s
+            15'b0010000_xxxxx_010: begin alu_control_o = ALU_FSGNJX;  valid_op_o = 1'b1; end                // fsgnjx.s
+            15'b0010100_xxxxx_000: begin alu_control_o = ALU_FMIN;    valid_op_o = 1'b1; end                // fmin.s
+            15'b0010100_xxxxx_001: begin alu_control_o = ALU_FMAX;    valid_op_o = 1'b1; end                // fmax.s
+            15'b1100000_00000_xxx: begin alu_control_o = ALU_FCVTWS;  valid_op_o = 1'b1; end                // fcvt.w.s
+            15'b1100000_00001_xxx: begin alu_control_o = ALU_FCVTWUS; valid_op_o = 1'b1; end                // fcvt.wu.s
+            15'b1110000_00000_000: begin alu_control_o = ALU_FMVXW;   valid_op_o = 1'b1; end                // fmv.x.w
+            15'b1010000_xxxxx_010: begin alu_control_o = ALU_FEQ;     valid_op_o = 1'b1; end                // feq.s
+            15'b1010000_xxxxx_001: begin alu_control_o = ALU_FLT;     valid_op_o = 1'b1; end                // flt.s
+            15'b1010000_xxxxx_000: begin alu_control_o = ALU_FLE;     valid_op_o = 1'b1; end                // fle.s
+            15'b1110000_00000_001: begin alu_control_o = ALU_FCLASS;  valid_op_o = 1'b1; end                // fclass.s
+            15'b1101000_00000_xxx: begin alu_control_o = ALU_FCVTSW;  valid_op_o = 1'b1; end                // fcvt.s.w
+            15'b1101000_00001_xxx: begin alu_control_o = ALU_FCVTSWU; valid_op_o = 1'b1; end                // fcvt.s.wu
+            15'b1111000_00000_000: begin alu_control_o = ALU_FMVWX;   valid_op_o = 1'b1; end                // fmv.w.x
+
+            default:               begin alu_control_o = 'bx;         valid_op_o = 1'b0; end
+        endcase
+        4'b0101: begin alu_control_o = ALU_FMADD;  valid_op_o = 1'b1; end                                   // fmadd.s
+        4'b0110: begin alu_control_o = ALU_FMSUB;  valid_op_o = 1'b1; end                                   // fmsub.s
+        4'b0111: begin alu_control_o = ALU_FNMSUB; valid_op_o = 1'b1; end                                   // fnmsub.s
+        4'b1000: begin alu_control_o = ALU_FNMADD; valid_op_o = 1'b1; end                                   // fnmadd.s
         default: begin alu_control_o = 'bx; valid_op_o = 1'b0; end
     endcase
 
