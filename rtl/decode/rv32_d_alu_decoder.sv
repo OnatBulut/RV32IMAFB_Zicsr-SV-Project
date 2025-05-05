@@ -8,7 +8,7 @@ module rv32_d_alu_decoder (input  logic [3:0]  alu_op_i,
                            output logic [`ALU_CONTROL_WIDTH-1:0] alu_control_o);
                    
     always_comb case (alu_op_i)
-        4'b0000: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                        // j-type, load, store - add
+        4'b0000: begin alu_control_o = ALU_ADD; valid_op_o = 1'b1; end                                      // j-type, load, store - add
         4'b0001: case (instr_i[14:12])
             3'b000:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // beq - xor
             3'b001:  begin alu_control_o = ALU_XOR;  valid_op_o = 1'b1; end                                 // bne - !xor

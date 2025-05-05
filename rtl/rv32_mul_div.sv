@@ -11,181 +11,185 @@
 //   populate the Execute/Memory pipe with relevant data and control signals of the division instruction.
 // New hazards may occur but they may already be handled by the hazard unit, check instructions that needs the division result after a few cycles have passed
 
-// TODO: Implement signed division, possibly add a LUT for division with powers of 2 and prevent division with 0 and overflow.
-// For signed division, twos complement of the input can be taken if its sign bit is 1 and signed_i is 1. Overflow may occur.
-// Check if the output is going to have a negative sign (if dividend_i or divisor_i is negative).
+// TODO: prevent division with 0 and overflow.
 // Don't waste time if any of the two inputs is 0. Not sure about overflow.
 
-module rv32_mul_div (input  logic        clk_i, rst_n_i,
+module rv32_mul_div (input  logic        clk_i, rst_n_i, flush_i,
                      input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                      input  logic [31:0] read_data_1_i, read_data_2_i,
+                     input  logic [31:0] instr_i,
 
                      output logic        running_o, done_o,
-                     output logic [31:0] result_o);
+                     output logic [31:0] result_o, instr_o);
     
-    // Controller
-    logic        start;
+    typedef enum logic [1:0] { IDLE, RUNNING_MUL, RUNNING_DIV } state_t;
+    state_t state;
     
-    logic        input_1_sign;
-    logic        input_2_sign;
+    typedef enum logic [1:0] { DIV_IDLE, DIVIDE, DIV_FINISH } div_state_t;
+    div_state_t div_state, div_next_state;
     
-    logic [31:0] input_1_reg;
-    logic [31:0] input_2_reg;
+    logic        input_1_sign, input_2_sign;
+    logic [31:0] input_1_reg, input_2_reg;
+    logic [`ALU_CONTROL_WIDTH-1:0] operation_reg;
     
     logic [31:0] high_result, low_result;
     logic [31:0] quotient, remainder;
     
-    always_comb begin : controller
-        case (alu_control_i)
-            // Lower 32-Bit Signed Multiplication
-            ALU_MUL:    begin
-                            input_1_sign = read_data_1_i[31];
-                            input_2_sign = read_data_2_i[31];
-                            
-                            input_1_reg = input_1_sign ? ~read_data_1_i + 1 : read_data_1_i;
-                            input_2_reg = input_2_sign ? ~read_data_2_i + 1 : read_data_2_i;
-                            
-                            result_o = input_1_sign != input_2_sign ? ~low_result + 1 : low_result;
-                            
-                            start = 1'b1;
-                        end
-            // Higher 32-Bit Signed Multiplication
-            ALU_MULH:   begin
-                            input_1_sign = read_data_1_i[31];
-                            input_2_sign = read_data_2_i[31];
-                            
-                            input_1_reg = input_1_sign ? ~read_data_1_i + 1 : read_data_1_i;
-                            input_2_reg = input_2_sign ? ~read_data_2_i + 1 : read_data_2_i;
-                            
-                            result_o = input_1_sign != input_2_sign ? ~high_result + 1 : high_result;
-                            
-                            start = 1'b1;
-                        end
-            // Higher 32-Bit Signed-Unsigned Multiplication
-            ALU_MULHSU: begin
-                            input_1_sign = read_data_1_i[31];
-                            
-                            input_1_reg = input_1_sign ? ~read_data_1_i + 1 : read_data_1_i;
-                            input_2_reg = read_data_2_i;
-                            
-                            result_o = input_1_sign ? ~high_result + 1 : high_result;
-                        
-                            start = 1'b1;
-                        end
-            // Higher 32-Bit Unsigned Multiplication
-            ALU_MULHU:  begin
-                            input_1_reg = read_data_1_i;
-                            input_2_reg = read_data_2_i;
-                            
-                            result_o = high_result;
-                            
-                            start = 1'b1;
-                        end
-            // 32-Bit Signed Division
-            ALU_DIV:    begin
-                            input_1_sign = read_data_1_i[31];
-                            input_2_sign = read_data_2_i[31];
-                            
-                            input_1_reg = input_1_sign ? ~read_data_1_i + 1 : read_data_1_i;
-                            input_2_reg = input_2_sign ? ~read_data_2_i + 1 : read_data_2_i;
-                            
-                            result_o = input_1_sign != input_2_sign ? ~quotient + 1 : quotient;
-                            
-                            start = 1'b1;
-                        end
-            // 32-Bit Unsigned Division
-            ALU_DIVU:   begin
-                            input_1_reg = read_data_1_i;
-                            input_2_reg = read_data_2_i;
-                            
-                            result_o = quotient;
-                            
-                            start = 1'b1;
-                        end
-            // 32-Bit Signed Remainder
-            ALU_REM:    begin
-                            input_1_sign = read_data_1_i[31];
-                            input_2_sign = read_data_2_i[31];
-                            
-                            input_1_reg = input_1_sign ? ~read_data_1_i + 1 : read_data_1_i;
-                            input_2_reg = input_2_sign ? ~read_data_2_i + 1 : read_data_2_i;
-                            
-                            result_o = input_1_sign ? ~remainder + 1 : remainder; // Remainder Sign = Dividend Sign
-                            
-                            start = 1'b1;
-                        end
-            // 32-Bit Unsigned Remainder
-            ALU_REMU:   begin
-                            input_1_reg = read_data_1_i;
-                            input_2_reg = read_data_2_i;
-                            
-                            result_o = remainder;
-                            
-                            start = 1'b1;
-                        end
-            // Unrelated Operation
-            default:    begin
-                            input_1_reg = 32'b0;
-                            input_2_reg = 32'b1;
-                            
-                            result_o = 32'b0;
-                            
-                            start = 1'b0;
-                        end 
-        endcase
-    end
-                     
-    // Multiplication
-    
-    // Division
-    
-    typedef enum logic [1:0] { IDLE, DIVIDE, FINISH } div_state_t;
-    div_state_t div_state, div_next_state;
-
-    logic [5:0]  count;
+    logic [4:0]  count;
     logic [31:0] Q, Q_next;
     logic [63:0] R, R_next, D;
     
-    always_ff @(posedge clk_i or negedge rst_n_i) begin : division_ff
-        if (!rst_n_i) begin
-            div_state <= IDLE;
+    logic        div_start, div_done;
+    logic        mul_start, mul_done;
+    
+    always_ff @(posedge clk_i or negedge rst_n_i) begin : contoller_fsm
+        if (!rst_n_i || flush_i) begin
+            state         <= IDLE;
+            running_o     <= 1'b0;
+            input_1_reg   <= 32'b0;
+            input_2_reg   <= 32'b0;
+            instr_o       <= 32'b0;
+            operation_reg <= 'b0;
+            input_1_sign  <= 1'b0;
+            input_2_sign  <= 1'b0;
+            div_start     <= 1'b0;
+            mul_start     <= 1'b0;
+        end else begin
+            case (state)
+                IDLE: begin
+                    if (alu_control_i inside { ALU_MUL, ALU_MULH, ALU_MULHSU, ALU_MULHU, ALU_DIV, ALU_DIVU, ALU_REM, ALU_REMU }) begin
+                        
+                        operation_reg <= alu_control_i;
+                        instr_o       <= instr_i;
+                        
+                        case (alu_control_i)
+                            ALU_MUL, ALU_MULH, ALU_DIV, ALU_REM: begin
+                                input_1_sign <= read_data_1_i[31];
+                                input_2_sign <= read_data_2_i[31];
+                                
+                                input_1_reg  <= read_data_1_i[31] ? ~read_data_1_i + 1 : read_data_1_i;
+                                input_2_reg  <= read_data_2_i[31] ? ~read_data_2_i + 1 : read_data_2_i;
+                            end
+                            
+                            ALU_MULHSU: begin
+                                input_1_sign <= read_data_1_i[31];
+                                input_2_sign <= 1'b0;
+                                
+                                input_1_reg  <= read_data_1_i[31] ? ~read_data_1_i + 1 : read_data_1_i;
+                                input_2_reg  <= read_data_2_i;
+                            end
+                            
+                            ALU_MULHU, ALU_DIVU, ALU_REMU: begin
+                                input_1_sign <= 1'b0;
+                                input_2_sign <= 1'b0;
+                                
+                                input_1_reg  <= read_data_1_i;
+                                input_2_reg  <= read_data_2_i;
+                            end
+                        endcase
+                        
+                        if (alu_control_i inside { ALU_MUL, ALU_MULH, ALU_MULHSU, ALU_MULHU }) begin
+                            state     <= RUNNING_MUL;
+                            mul_start <= 1'b1;
+                        end else begin
+                            state     <= RUNNING_DIV;
+                            div_start <= 1'b1;
+                        end
+                        
+                        running_o <= 1'b1;
+                    end
+                end
+                
+                RUNNING_MUL: begin
+                    mul_start <= 1'b0;
+                    
+                    if (mul_done) begin
+                        state     <= IDLE;
+                        running_o <= 1'b0;
+                    end
+                end
+                
+                RUNNING_DIV: begin
+                    div_start <= 1'b0;
+                    
+                    if (div_done) begin
+                        state     <= IDLE;
+                        running_o <= 1'b0;
+                    end
+                end
+            endcase
+        end
+    end
+
+    always_comb begin : controller_logic
+        case (operation_reg)
+            ALU_MUL: 
+                result_o = input_1_sign != input_2_sign ? ~low_result + 1 : low_result;
+            
+            ALU_MULH:
+                result_o = input_1_sign != input_2_sign ? ~high_result + 1 : high_result;
+                
+            ALU_MULHSU:
+                result_o = input_1_sign ? ~high_result + 1 : high_result;
+                
+            ALU_MULHU:
+                result_o = high_result;
+                
+            ALU_DIV:
+                result_o = input_1_sign != input_2_sign ? ~quotient + 1 : quotient;
+                
+            ALU_DIVU:
+                result_o = quotient;
+                
+            ALU_REM:
+                result_o = input_1_sign ? ~remainder + 1 : remainder;
+                
+            ALU_REMU:
+                result_o = remainder;
+                
+            default:
+                result_o = 32'b0;
+        endcase
+        
+        done_o = (div_done && state == RUNNING_DIV || mul_done && state == RUNNING_MUL);
+    end
+
+    // Division
+    
+    always_ff @(posedge clk_i or negedge rst_n_i) begin : division_fsm
+        if (!rst_n_i || flush_i) begin
+            div_state <= DIV_IDLE;
             Q <= 0;
             R <= 0;
             D <= 0;
             count <= 0;
-            running_o <= 1'b0;
         end else begin
             div_state <= div_next_state;
             Q <= Q_next;
             R <= R_next;
             
-            if (div_state == IDLE && start) begin
+            if (div_state == DIV_IDLE && div_start) begin
                 count <= 31;
-                running_o <= 1'b1;
-                D <= {read_data_1_i, 32'b0};
-                R <= {32'b0, read_data_2_i};
-            end else if (div_state == DIVIDE) begin
+                D <= {input_2_reg, 32'b0};
+                R <= {32'b0, input_1_reg};
+            end else if (div_state == DIVIDE && count != 0) begin
                 count <= count - 1'b1;
-            end
-            
-            if (done_o) begin
-                running_o <= 1'b0;
             end
         end
     end
 
-    always_comb begin : division_comb
+    always_comb begin : division_logic
         div_next_state = div_state;
         Q_next = Q;
         R_next = R;
         
-        done_o = 1'b0;
+        div_done = 1'b0;
         quotient = 32'b0;
         remainder = 32'b0;
         
         case (div_state)
-            IDLE: begin
-                if (start) begin
+            DIV_IDLE: begin
+                if (div_start) begin
                     Q_next = 0;
                     div_next_state = DIVIDE;
                 end
@@ -200,11 +204,11 @@ module rv32_mul_div (input  logic        clk_i, rst_n_i,
                     Q_next = Q | (1 << count);
                 end
                 
-              	if (count == 0)
-                    div_next_state = FINISH;
+                if (count == 0)
+                    div_next_state = DIV_FINISH;
             end
 
-            FINISH: begin
+            DIV_FINISH: begin
                 Q_next = Q - ~Q;
                 
                 if (R[63]) begin
@@ -214,9 +218,9 @@ module rv32_mul_div (input  logic        clk_i, rst_n_i,
                 
                 quotient = Q_next;
                 remainder = R_next[63:32];
-              	
-              	done_o = 1'b1;
-                div_next_state = IDLE;
+                
+                div_done = 1'b1;
+                div_next_state = DIV_IDLE;
             end
         endcase
     end

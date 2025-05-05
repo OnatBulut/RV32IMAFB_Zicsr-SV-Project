@@ -24,7 +24,7 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
     unified_memory #(.NB_COL(4),                           // Specify number of columns (number of bytes)
                      .COL_WIDTH(8),                        // Specify column width (byte width, typically 8 or 9)
                      .RAM_DEPTH(8192),                     // Specify RAM depth (number of entries)
-                     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+                     .RAM_PERFORMANCE("LOW_LATENCY"),      // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
                      .INIT_FILE("memfile.mem"))            // Specify name/location of RAM initialization file if using one (leave blank if not)
                RAM (.addr_a_i(instr_address[14:2]),   // Port A address bus, width determined from RAM_DEPTH
                     .addr_b_i(data_address[14:2]),    // Port B address bus, width determined from RAM_DEPTH
@@ -37,8 +37,8 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
                     .en_b_i(1'b1),              // Port B RAM Enable, for additional power savings, disable port when not in use
                     .rst_a_i(1'b0),             // Port A output reset (does not affect memory contents)
                     .rst_b_i(1'b0),             // Port B output reset (does not affect memory contents)
-                    .regce_a_i(1'b1),           // Port A output register enable
-                    .regce_b_i(1'b1),           // Port B output register enable
+                    .regce_a_i(1'b0),           // Port A output register enable
+                    .regce_b_i(1'b0),           // Port B output register enable
                     .dout_a_o(instr),           // Port A RAM output data, width determined from NB_COL*COL_WIDTH
                     .dout_b_o(read_data));      // Port B RAM output data, width determined from NB_COL*COL_WIDTH
                     

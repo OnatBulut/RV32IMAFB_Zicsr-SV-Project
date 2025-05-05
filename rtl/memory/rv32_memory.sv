@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 module rv32_memory (input  logic        clk_i, rst_n_i,
+                    input  logic        stall_w_i,
                     input  logic        reg_write_i, fp_reg_write_i,
                     input  logic        memory_write_i,
                     input  logic [2:0]  result_source_i,
@@ -54,7 +55,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
             alu_result_reg    <= 32'b0;
             instr_reg         <= 32'b0;
             pc_next_reg       <= 32'b0;
-        end else begin
+        end else if (!stall_w_i) begin
             reg_write_reg     <= reg_write_i;
             fp_reg_write_reg  <= fp_reg_write_i;
             result_source_reg <= result_source_i;
@@ -89,7 +90,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
             instr_reg_w         <= 32'b0;
             pc_next_reg_w       <= 32'b0;
             fpu_result_reg      <= 32'b0;
-        end else begin
+        end else if (!stall_w_i) begin
             reg_write_reg_w     <= reg_write_reg;
             fp_reg_write_reg_w  <= fp_reg_write_reg;
             result_source_reg_w <= result_source_reg;

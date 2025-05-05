@@ -7,66 +7,6 @@ module rv32_e_alu (input  logic [`ALU_CONTROL_WIDTH-1:0] alu_control_i,
                    output logic        zero_o,
                    output logic [31:0] result_o);
     
-    /*
-    // Divider logic
-    logic        start, in_progress, done, signed_div;
-    logic [`ALU_CONTROL_WIDTH-1:0] active_operation; 
-    logic [31:0] quotient, remainder;
-    logic [31:0] dividend_reg, divisor_reg;
-    
-    rv32_e_divider Divider (.clk_i(clk_i),
-                            .rst_n_i(rst_n_i),
-                            .start_i(start),
-                            .signed_i(signed_div),
-                            .dividend_i(dividend_reg),
-                            .divisor_i(divisor_reg),
-                            .done_o(done),
-                            .quotient_o(quotient),
-                            .remainder_o(remainder));
-                                   
-    assign stall_cpu_o = in_progress && !done;
-                                       
-    always_ff @(posedge clk_i, negedge rst_n_i) begin
-        if (!rst_n_i) begin
-            in_progress      <= 1'b0;
-            start            <= 1'b0;
-            signed_div       <= 1'b0;
-            active_operation <= '0;
-            dividend_reg     <= 32'b0;
-            divisor_reg      <= 32'b0;
-        end else begin
-            // Handle division completion
-            if (done) begin
-                in_progress   <= 1'b0;
-                start         <= 1'b0;
-            end
-            
-            // Start new division operations
-            if (!in_progress && !done) begin
-                if (alu_control_i == ALU_DIV || alu_control_i == ALU_REM) begin
-                    in_progress      <= 1'b1;
-                    start            <= 1'b1;
-                    signed_div       <= 1'b1;
-                    active_operation <= alu_control_i;
-                    dividend_reg     <= src_a_i;
-                    divisor_reg      <= src_b_i;
-                end else if (alu_control_i == ALU_DIVU || alu_control_i == ALU_REMU) begin
-                    in_progress      <= 1'b1;
-                    start            <= 1'b1;
-                    signed_div       <= 1'b0;
-                    active_operation <= alu_control_i;
-                    dividend_reg     <= src_a_i;
-                    divisor_reg      <= src_b_i;
-                end
-            end
-            
-            // Clear start signal after one cycle
-            if (start) begin
-                start <= 1'b0;
-            end
-        end
-    end*/
-    
     always_comb begin
         result_o = 0;
         

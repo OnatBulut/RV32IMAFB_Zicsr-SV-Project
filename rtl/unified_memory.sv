@@ -47,13 +47,13 @@ module unified_memory #(parameter NB_COL = 4,                           // Speci
         end
     endgenerate
     
-    always @(negedge clk_a_i) begin
+    always @(posedge clk_a_i) begin
         if (en_a_i) begin
             ram_data_a <= BRAM[addr_a_i];
         end
     end
     
-    always @(negedge clk_a_i) begin
+    always @(posedge clk_a_i) begin
         if (en_b_i) begin
             ram_data_b <= BRAM[addr_b_i];
         end
@@ -62,7 +62,7 @@ module unified_memory #(parameter NB_COL = 4,                           // Speci
     generate
         genvar i;
             for (i = 0; i < NB_COL; i = i+1) begin : byte_write
-                always @(negedge clk_a_i) begin
+                always @(posedge clk_a_i) begin
                     if (en_a_i) begin
                         if (we_a_i[i]) begin
                             BRAM[addr_a_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_a_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
@@ -70,7 +70,7 @@ module unified_memory #(parameter NB_COL = 4,                           // Speci
                     end
                 end
                 
-                always @(negedge clk_a_i) begin
+                always @(posedge clk_a_i) begin
                     if (en_b_i) begin
                         if (we_b_i[i]) begin
                             BRAM[addr_b_i][(i+1)*COL_WIDTH-1:i*COL_WIDTH] <= din_b_i[(i+1)*COL_WIDTH-1:i*COL_WIDTH];
