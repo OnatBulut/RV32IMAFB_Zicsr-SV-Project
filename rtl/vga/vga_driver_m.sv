@@ -131,16 +131,10 @@ module vga_driver_m (
     output logic [11:0] o_rgb444
 );
 
-    clk_wiz_0 clk_wiz_inst0 (
-        .clk_in1(i_clk),
-        .resetn(i_rst_n),
-        .clk_out1(clk_25MHz)
-    );
-
     logic active;
     logic [9:0] hcount, vcount;
     vga_sync_m vga_sync (
-        .i_clk_25MHz(clk_25MHz),
+        .i_clk_25MHz(i_clk),
         .i_rst_n(i_rst_n),
         .o_hsync(o_hsync),
         .o_vsync(o_vsync),
@@ -156,7 +150,7 @@ module vga_driver_m (
         .wea(i_vga_mem_we),
         .addra(i_vga_mem_waddr),
         .dina(i_vga_mem_wdata),
-        .clkb(~clk_25MHz),
+        .clkb(~i_clk),
         .addrb(vga_addr),
         .doutb(rdata)
     );
@@ -214,7 +208,7 @@ module vga_driver_m (
     assign temp_rgb444 = is_render ? fg_color : bg_color;
     
     logic [11:0] temp_rgb444_2;
-    always_ff @(posedge clk_25MHz, negedge i_rst_n)
+    always_ff @(posedge i_clk, negedge i_rst_n)
         if (!i_rst_n)
             temp_rgb444_2 <= 12'h0;
         else

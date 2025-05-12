@@ -55,30 +55,27 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
 
     always_comb begin
         case(state)
-            IDLE: if (mem_we_i) begin
-                      next_state = BUS;
-                  end else begin
-                      next_state = IDLE;
-                  end
-            BUS:  if (ack) begin
-                      next_state = IDLE;
-                  end else begin
-                      next_state = BUS;
-                  end
-            default:  next_state = IDLE;
-        endcase
-    end
-
-    always_comb begin
-        case(state)
             IDLE: begin
+                if (mem_we_i) begin
+                    next_state = BUS;
+                end else begin
+                    next_state = IDLE;
+                end
+
                 wb_stb_o = 1'b0;
                 cyc      = 1'b0;
             end
             BUS: begin
+                if (ack) begin
+                    next_state = IDLE;
+                end else begin
+                    next_state = BUS;
+                end
+
                 wb_stb_o = 1'b1;
                 cyc      = 1'b1;
             end
+            default:  next_state = IDLE;
         endcase
     end
 endmodule

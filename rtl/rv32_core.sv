@@ -227,7 +227,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
         case (memory_data_address_o[31:28])
             4'b0000,
             4'b0001: {memory_write_enable_o, wishbone_write_enable} = {memory_write_enable, 4'b0000};
-            4'b0010: {memory_write_enable_o, wishbone_write_enable} = {4'b0000, wishbone_write_enable};
+            4'b0010: {memory_write_enable_o, wishbone_write_enable} = {4'b0000, memory_write_enable};
             default: {memory_write_enable_o, wishbone_write_enable} = {4'b0000, 4'b0000};
         endcase
     end

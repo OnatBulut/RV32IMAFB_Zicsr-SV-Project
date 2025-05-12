@@ -22,7 +22,7 @@ module riscv_top_tb;
         //#16 nrst = 0;
         //#4 nrst = 1;
         
-        #208 $stop;
+        #2008 $stop;
     end
 
 endmodule

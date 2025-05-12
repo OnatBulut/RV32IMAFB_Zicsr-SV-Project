@@ -36,7 +36,7 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
     logic        vga_cyc;
 
     wishbone_master Wishbone_Master (.clk_i(clk_i),
-                                     .rst_n_i(rst_i),
+                                     .rst_n_i(rst_n_i),
                                      .mem_we_i(mem_we_i),
                                      .mem_addr_i(mem_addr_i),
                                      .mem_data_i(mem_data_i),
@@ -56,7 +56,7 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                      .wb_sel_o(wb_sel));
 
     wishbone_vga_controller VGA_Controller (.clk_i(clk_i),
-                                            .rst_n_i(rst_i),
+                                            .rst_n_i(rst_n_i),
                                             .wb_stb_i(wb_stb),
                                             .wb_cyc_i(vga_cyc),
                                             .wb_sel_i(wb_sel),
