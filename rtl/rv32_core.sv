@@ -4,6 +4,17 @@
 module rv32_core (input  logic        clk_i, rst_n_i,
                   input  logic [31:0] instr_i,
                   input  logic [31:0] read_data_i,
+
+                  input  logic uart_rx_i,
+                  output logic uart_tx_o,
+
+                  input  logic spi_miso_i,
+                  output logic spi_mosi_o,
+                  output logic spi_sck_o,
+                  output logic spi_cs_o,
+
+                  output logic hsync_o, vsync_o,
+                  output logic [11:0] rgb444_o,
                  
                   output logic [3:0]  memory_write_enable_o,
                   output logic [31:0] memory_instr_address_o,
@@ -154,11 +165,37 @@ module rv32_core (input  logic        clk_i, rst_n_i,
 
     logic        stall_w;
     logic [2:0]  result_source_w;
+    logic [3:0]  memory_write_enable, wishbone_write_enable;
     logic [31:0] instr_w;
     logic [31:0] pc_next_w;
     logic [31:0] alu_result_w;
-    logic [31:0] read_data;
+    logic [31:0] read_data, read_data_memory;
+    logic [31:0] read_data_wishbone_m;
     logic [31:0] fpu_result_w;
+
+    /*
+    0x00000000 - 0x0001FFFF = INSTRUCTION MEMORY
+    0x10000000 - 0x1001FFFF = DATA MEMORY
+    0x20000000 - 0x2000001F = UART (TODO: ADJUST END ADDRESS)
+    0x20010000 - 0x2001FFFF = SPI  (TODO: ADJUST END ADDRESS)
+    0x20020000 - 0x2002FFFF = VGA  (TODO: ADJUST END ADDRESS)
+    */
+
+    rv32_peripheral_datapath Peripheral_Datapath (.clk_i(clk_i),
+                                                  .rst_n_i(rst_n_i),
+                                                  .mem_we_i(wishbone_write_enable),
+                                                  .mem_addr_i(memory_data_address_o),
+                                                  .mem_data_i(memory_write_data_o),
+                                                  .mem_data_o(read_data_wishbone_m),
+                                                  .uart_rx_i(uart_rx_i),
+                                                  .uart_tx_o(uart_tx_o),
+                                                  .spi_miso_i(spi_miso_i),
+                                                  .spi_mosi_o(spi_mosi_o),
+                                                  .spi_sck_o(spi_sck_o),
+                                                  .spi_cs_o(spi_cs_o),
+                                                  .hsync_o(hsync_o),
+                                                  .vsync_o(vsync_o),
+                                                  .rgb444_o(rgb444_o));
 
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
@@ -168,7 +205,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .memory_write_i(memory_write_m),
                         .result_source_i(result_source_m),
                         .alu_result_i(alu_result_m),
-                        .read_data_i(read_data_i),
+                        .read_data_memory_i(read_data_i),
+                        .read_data_wishbone_i(read_data_wishbone_m),
                         .write_data_i(write_data),
                         .instr_i(instr_m),
                         .pc_next_i(pc_next_m),
@@ -176,7 +214,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .reg_write_o(reg_write_w),
                         .fp_reg_write_o(fp_reg_write_w),
                         .result_source_o(result_source_w),
-                        .memory_write_enable_o(memory_write_enable_o),
+                        .memory_write_enable_o(memory_write_enable),
                         .memory_data_address_o(memory_data_address_o),
                         .memory_write_data_o(memory_write_data_o),
                         .alu_result_o(alu_result_w),
@@ -184,6 +222,15 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .instr_o(instr_w),
                         .pc_next_o(pc_next_w),
                         .fpu_result_o(fpu_result_w));
+
+    always_comb begin : write_enable_demux
+        case (memory_data_address_o[31:28])
+            4'b0000,
+            4'b0001: {memory_write_enable_o, wishbone_write_enable} = {memory_write_enable, 4'b0000};
+            4'b0010: {memory_write_enable_o, wishbone_write_enable} = {4'b0000, wishbone_write_enable};
+            default: {memory_write_enable_o, wishbone_write_enable} = {4'b0000, 4'b0000};
+        endcase
+    end
     
     rv32_writeback Writeback (.instr_source_i(1'b0),
                               .result_source_i(result_source_w),
