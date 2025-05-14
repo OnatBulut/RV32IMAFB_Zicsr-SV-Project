@@ -165,12 +165,7 @@ module vga_driver_m (
         ypos = vcount[2:0];
     end
     
-    logic [11:0] mult_result;
-    mult_gen_0 mult (
-        .A(row),
-        .P(mult_result)
-    );
-    assign vga_addr = mult_result + { 5'h0, col[6:1] };
+    assign vga_addr = row * 6'd40 + { 5'h0, col[6:1] };
     
     logic [7:0] char;
     assign char = (~col[0]) ? rdata[23:16] : rdata[7:0];
