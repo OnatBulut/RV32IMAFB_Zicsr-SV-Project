@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module rv32_m_memory_controller (input  logic        write_enable_i,
-                                 input  logic [1:0]  address_2lsb_i, address_2lsb_m2_i,
+                                 input  logic [1:0]  address_2lsb_store_i, address_2lsb_load_i,
                                  input  logic [2:0]  funct3_i,
                                  input  logic [31:0] datapath_read_i, memory_read_i,
                          
@@ -28,18 +28,18 @@ module rv32_m_memory_controller (input  logic        write_enable_i,
     // 1_xx : unsigned
     always_comb case (funct3_i[1:0])
         2'b00: begin
-            memory_byte = memory_read_i >> (address_2lsb_m2_i[1:0] * 8);
+            memory_byte = memory_read_i >> (address_2lsb_load_i[1:0] * 8);
             datapath_write_o = funct3_i[2] ? {24'b0, memory_byte} 
                                       : {{24{memory_byte[7]}}, memory_byte};
-            memory_write_o = datapath_read_i[7:0] << (address_2lsb_i[1:0] * 8);
-            write_enable_o = write_enable_i << address_2lsb_i[1:0];
+            memory_write_o = datapath_read_i[7:0] << (address_2lsb_store_i[1:0] * 8);
+            write_enable_o = write_enable_i << address_2lsb_store_i[1:0];
         end
         2'b01: begin
-            memory_halfword = memory_read_i >> (address_2lsb_m2_i[1:0] * 8);
+            memory_halfword = memory_read_i >> (address_2lsb_load_i[1:0] * 8);
             datapath_write_o = funct3_i[2] ? {16'b0, memory_halfword} 
                                       : {{16{memory_halfword[15]}}, memory_halfword};
-            memory_write_o = datapath_read_i[15:0] << (address_2lsb_i[1:0] * 8);
-            write_enable_o = {2{write_enable_i}} << address_2lsb_i[1:0];
+            memory_write_o = datapath_read_i[15:0] << (address_2lsb_store_i[1:0] * 8);
+            write_enable_o = {2{write_enable_i}} << address_2lsb_store_i[1:0];
         end
         default: begin
             datapath_write_o = memory_read_i;

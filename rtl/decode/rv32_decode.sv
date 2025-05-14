@@ -2,7 +2,7 @@
 `include "defines_header.svh"
 
 module rv32_decode (input  logic        clk_i, rst_n_i,
-                    input  logic        stall_e_i, flush_e_i,
+                    input  logic        flush_e_i,
                     input  logic        reg_write_enable_i,
                     input  logic        fp_reg_write_enable_i,
                     input  logic [4:0]  reg_write_address_i,
@@ -128,7 +128,7 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
             pc_reg               <= 32'b0;
             pc_next_reg          <= 32'b0;
             imm_extend_reg       <= 32'b0;
-        end else if (!stall_e_i) begin
+        end else begin
             reg_write_reg        <= reg_write;
             fp_reg_write_reg     <= fp_reg_write;
             memory_write_reg     <= memory_write;

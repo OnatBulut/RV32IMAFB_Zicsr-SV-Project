@@ -41,7 +41,6 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                       .pc_o(pc_d),
                       .pc_next_o(pc_next_d));
 
-    logic        stall_e;                  
     logic        flush_e;
     logic        reg_write_e, reg_write_w;
     logic        fp_reg_write_e, fp_reg_write_w;
@@ -63,7 +62,6 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                       
     rv32_decode Decode (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
-                        .stall_e_i(stall_e),
                         .flush_e_i(flush_e),
                         .reg_write_enable_i(reg_write_w),
                         .fp_reg_write_enable_i(fp_reg_write_w),
@@ -94,7 +92,6 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .pc_next_o(pc_next_e),
                         .imm_extend_o(immediate_extend));
     
-    logic        stall_m;
     logic        reg_write_m, fp_reg_write_m;
     logic        memory_write_m;
     logic [1:0]  forward_ae, forward_be;
@@ -102,13 +99,12 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic [`EXCEPTION_WIDTH-1:0] exceptions_c;
     logic [31:0] instr_m;
     logic [31:0] pc_next_m;
-    logic [31:0] alu_result_m, alu_result_m2;
+    logic [31:0] alu_result_e, alu_result_m;
     logic [31:0] write_data;
     logic [31:0] fpu_result_m;
     
     rv32_execute Execute (.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
-                          .stall_m_i(stall_m),
                           .reg_write_i(reg_write_e),
                           .fp_reg_write_i(fp_reg_write_e),
                           .memory_write_i(memory_write_e),
@@ -132,7 +128,6 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .pc_i(pc_e),
                           .pc_next_i(pc_next_e),
                           .imm_extend_i(immediate_extend),
-                          .forwarded_res_m2_i(alu_result_m2),
                           .forwarded_res_w_i(writeback_result),
                           .pc_source_o(pc_source),
                           .reg_write_o(reg_write_m),
@@ -142,7 +137,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .exceptions_o(exceptions_c),
                           .instr_o(instr_m),
                           .pc_next_o(pc_next_m),
-                          .alu_result_o(alu_result_m),
+                          .alu_result_controller_o(alu_result_e),
+                          .alu_result_datapath_o(alu_result_m),
                           .write_data_o(write_data),
                           .pc_target_o(pc_target),
                           .fpu_result_o(fpu_result_m));
@@ -164,23 +160,21 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                                .result_o(mul_div_result),
                                .instr_o(mul_div_instr));
 
-    logic        stall_w;
     logic [2:0]  result_source_w;
     logic [3:0]  memory_write_enable, wishbone_write_enable;
-    logic [31:0] instr_m2, instr_w;
+    logic [31:0] instr_w;
     logic [31:0] pc_next_w;
     logic [31:0] alu_result_w;
     logic [31:0] read_data, read_data_memory;
     logic [31:0] read_data_wishbone_m;
     logic [31:0] fpu_result_w;
-    logic [31:0] reg_write_m2;
 
     /*
     0x00000000 - 0x0001FFFF = INSTRUCTION MEMORY
     0x10000000 - 0x1001FFFF = DATA MEMORY
-    0x20000000 - 0x2000001F = UART (TODO: ADJUST END ADDRESS)
-    0x20010000 - 0x2001FFFF = SPI  (TODO: ADJUST END ADDRESS)
-    0x20020000 - 0x2002FFFF = VGA  (TODO: ADJUST END ADDRESS)
+    0x20000000 - 0x2001FFFF = UART
+    0x20010000 - 0x2001FFFF = SPI
+    0x20020000 - 0x2002FFFF = VGA
     */
 
     rv32_peripheral_datapath Peripheral_Datapath (.clk_i(clk_i),
@@ -201,29 +195,28 @@ module rv32_core (input  logic        clk_i, rst_n_i,
 
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
-                        .stall_w_i(stall_w),
                         .reg_write_i(reg_write_m),
                         .fp_reg_write_i(fp_reg_write_m),
-                        .memory_write_i(memory_write_m),
+                        .memory_write_controller_i(memory_write_e),
+                        .memory_write_datapath_i(memory_write_m),
                         .result_source_i(result_source_m),
-                        .alu_result_i(alu_result_m),
+                        .alu_result_controller_i(alu_result_e),
+                        .alu_result_datapath_i(alu_result_m),
                         .read_data_memory_i(read_data_i),
                         .read_data_wishbone_i(read_data_wishbone_m),
                         .write_data_i(write_data),
-                        .instr_i(instr_m),
+                        .instr_controller_i(instr_e),
+                        .instr_datapath_i(instr_m),
                         .pc_next_i(pc_next_m),
                         .fpu_result_i(fpu_result_m),
-                        .reg_write_m2_o(reg_write_m2),
                         .reg_write_o(reg_write_w),
                         .fp_reg_write_o(fp_reg_write_w),
                         .result_source_o(result_source_w),
                         .memory_write_enable_o(memory_write_enable),
                         .memory_data_address_o(memory_data_address_o),
                         .memory_write_data_o(memory_write_data_o),
-                        .alu_result_m2_o(alu_result_m2),
                         .alu_result_o(alu_result_w),
                         .read_data_o(read_data),
-                        .instr_m2_o(instr_m2),
                         .instr_o(instr_w),
                         .pc_next_o(pc_next_w),
                         .fpu_result_o(fpu_result_w));
@@ -254,31 +247,22 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     rv32_hazard_unit Hazard_Unit (.clk_i(clk_i),
                                   .rst_n_i(rst_n_i),
                                   .reg_write_m_i(reg_write_m),
-                                  .reg_write_m2_i(reg_write_m2),
                                   .reg_write_w_i(reg_write_w),
-                                  .result_src_e_i(result_source_e),
                                   .pc_src_e_i(pc_source),
-                                  .mul_div_done_i(mul_div_done),
                                   .mul_div_running_i(mul_div_running),
+                                  .result_src_e_i(result_source_e),
                                   .rd_e_i(instr_e[11:7]),
-                                  .rd_m1_i(instr_m[11:7]),
-                                  .rd_m2_i(instr_m2[11:7]),
+                                  .rd_m_i(instr_m[11:7]),
                                   .rd_w_i(instr_wd[11:7]),
                                   .rd_md_i(mul_div_instr[11:7]),
                                   .rs1_d_i(instr_d[19:15]),
                                   .rs2_d_i(instr_d[24:20]),
                                   .rs1_e_i(instr_e[19:15]),
                                   .rs2_e_i(instr_e[24:20]),
-                                  .rs1_md_i(mul_div_instr[19:15]),
-                                  .rs2_md_i(mul_div_instr[24:20]),
                                   .stall_f_o(stall_f),
                                   .stall_d_o(stall_d),
-                                  .stall_e_o(stall_e),
-                                  .stall_m_o(stall_m),
-                                  .stall_w_o(stall_w),
                                   .flush_d_o(flush_d),
                                   .flush_e_o(flush_e),
-                                  .flush_md_o(flush_md),
                                   .forward_ae_o(forward_ae),
                                   .forward_be_o(forward_be));
         
