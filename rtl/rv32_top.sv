@@ -15,7 +15,7 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
                 
                  output logic read_data_o, write_data_o);
                  
-    logic        clk_33MHz;
+    logic        clk_25MHz;
     logic [3:0]  write_enable;
     logic [31:0] instr, instr_address;
     logic [31:0] read_data, write_data, data_address;
@@ -26,10 +26,10 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
     clk_wiz_1 clk_wiz_inst1 (
         .clk_in1(clk_sys_i),
         .resetn(rst_n_i),
-        .clk_out1(clk_33MHz)
+        .clk_out1(clk_25MHz)
     );
                  
-    rv32_core Core (.clk_i(clk_sys_i),
+    rv32_core Core (.clk_i(clk_25MHz),
                     .rst_n_i(rst_n_i),
                     .instr_i(instr),
                     .read_data_i(read_data),
@@ -57,7 +57,7 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
                     .addr_b_i({data_address[28], data_address[16:2]}),  // Port B address bus, width determined from RAM_DEPTH
                     .din_a_i(32'b0),                                    // Port A RAM input data, width determined from NB_COL*COL_WIDTH
                     .din_b_i(write_data),                               // Port B RAM input data, width determined from NB_COL*COL_WIDTH
-                    .clk_a_i(clk_sys_i),                                // Clock
+                    .clk_a_i(clk_25MHz),                                // Clock
                     .we_a_i(4'b0),                                      // Port A write enable, width determined from NB_COL
                     .we_b_i(write_enable),                              // Port B write enable, width determined from NB_COL
                     .en_a_i(1'b1),                                      // Port A RAM Enable, for additional power savings, disable port when not in use
