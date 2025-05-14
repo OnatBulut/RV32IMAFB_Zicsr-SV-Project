@@ -21,7 +21,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                   output logic [31:0] memory_data_address_o,
                   output logic [31:0] memory_write_data_o);
                   
-    logic        stall_f, stall_d;
+    logic        stall_f, stall_d, stall_wsh;
     logic        flush_d;
     logic        pc_source;
     logic [31:0] pc_d, pc_next_d;
@@ -31,8 +31,8 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     rv32_fetch Fetch (.clk_i(clk_i),
                       .rst_n_i(rst_n_i),
                       .pc_source_i(pc_source),
-                      .stall_f_i(stall_f),
-                      .stall_d_i(stall_d),
+                      .stall_f_i(stall_f || stall_wsh),
+                      .stall_d_i(stall_d || stall_wsh),
                       .flush_d_i(flush_d),
                       .instr_i(instr_i),
                       .pc_target_i(pc_target),
@@ -62,6 +62,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                       
     rv32_decode Decode (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
+                        .stall_e_i(stall_wsh),
                         .flush_e_i(flush_e),
                         .reg_write_enable_i(reg_write_w),
                         .fp_reg_write_enable_i(fp_reg_write_w),
@@ -105,6 +106,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     
     rv32_execute Execute (.clk_i(clk_i),
                           .rst_n_i(rst_n_i),
+                          .stall_m_i(stall_wsh),
                           .reg_write_i(reg_write_e),
                           .fp_reg_write_i(fp_reg_write_e),
                           .memory_write_i(memory_write_e),
@@ -179,6 +181,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
 
     rv32_peripheral_datapath Peripheral_Datapath (.clk_i(clk_i),
                                                   .rst_n_i(rst_n_i),
+                                                  .stall_o(stall_wsh),
                                                   .mem_we_i(wishbone_write_enable),
                                                   .mem_addr_i(memory_data_address_o),
                                                   .mem_data_i(memory_write_data_o),
@@ -195,6 +198,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
 
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),
+                        .stall_w_i(stall_wsh),
                         .reg_write_i(reg_write_m),
                         .fp_reg_write_i(fp_reg_write_m),
                         .memory_write_controller_i(memory_write_e),

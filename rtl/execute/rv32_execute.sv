@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module rv32_execute (input  logic        clk_i, rst_n_i,
+module rv32_execute (input  logic        clk_i, rst_n_i, stall_m_i,
                      input  logic        reg_write_i, fp_reg_write_i, memory_write_i, memory_data_src_i, jump_i, branch_i,
                      input  logic        pc_target_source_i, alu_source_a_i, alu_source_b_i,
                      input  logic [1:0]  forward_a_i, forward_b_i,
@@ -97,7 +97,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
             pc_next_reg         <= 32'b0;
             alu_result_reg      <= 32'b0;
             fpu_result_reg      <= 32'b0;
-        end else begin
+        end else if (!stall_m_i) begin
             reg_write_reg       <= reg_write_i;
             fp_reg_write_reg    <= fp_reg_write_i;
             memory_write_reg    <= memory_write_i;

@@ -18,6 +18,7 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
                         input  logic        vga_ack_i,
                         output logic        vga_cyc_o,
 
+                        output logic        stall_o,
                         output logic        wb_we_o,
                         output logic        wb_stb_o,
                         output logic [3:0]  wb_sel_o,
@@ -42,15 +43,20 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
     assign spi_cyc_o  = (mem_addr_i[17:16] == 2'b01) ? cyc : 1'b0;
     assign vga_cyc_o  = (mem_addr_i[17:16] == 2'b10) ? cyc : 1'b0;
 
+    logic stall, we;
+    assign stall_o = (!we && mem_we_i) || stall;
+
     typedef enum logic { IDLE, BUS } bus_state_t;
     bus_state_t state, next_state;
 
     always_ff @(posedge clk_i, negedge rst_n_i) begin
         if (!rst_n_i) begin
             state <= IDLE;
+            we    <= 1'b0;
         end else begin
             state <= next_state;
-        end
+            we    <= |mem_we_i;
+        end  
     end
 
     always_comb begin
@@ -64,6 +70,7 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
 
                 wb_stb_o = 1'b0;
                 cyc      = 1'b0;
+                stall    = 1'b0;
             end
             BUS: begin
                 if (ack) begin
@@ -74,8 +81,9 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
 
                 wb_stb_o = 1'b1;
                 cyc      = 1'b1;
+                stall    = next_state != IDLE;
             end
-            default:  next_state = IDLE;
+            default: next_state = IDLE;
         endcase
     end
 endmodule

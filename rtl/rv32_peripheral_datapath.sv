@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
+                                 output logic        stall_o,
                             
                                  input  logic [3:0]  mem_we_i,
                                  input  logic [31:0] mem_addr_i,
@@ -49,6 +50,7 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                      .spi_data_i(spi_data),
                                      .vga_cyc_o(vga_cyc),
                                      .vga_ack_i(vga_ack),
+                                     .stall_o(stall_o),
                                      .wb_adr_o(wb_adr),
                                      .wb_dat_o(wb_dat),
                                      .wb_we_o(wb_we),
@@ -59,6 +61,7 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                             .rst_n_i(rst_n_i),
                                             .wb_stb_i(wb_stb),
                                             .wb_cyc_i(vga_cyc),
+                                            .wb_we_i(wb_we),
                                             .wb_sel_i(wb_sel),
                                             .wb_adr_i(wb_adr[13:2]),
                                             .wb_dat_i(wb_dat),
