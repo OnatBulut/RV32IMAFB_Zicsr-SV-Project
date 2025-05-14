@@ -66,5 +66,19 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                             .o_hsync(hsync_o),
                                             .o_vsync(vsync_o),
                                             .o_rgb444(rgb444_o));
+   uart_denetleyici UART_Denetleyici(.clk_i(clk_i),
+                                     .rst_i(!rst_n_i),
+                                     .wb_adr_i(wb_adr[3:2]),
+                                     .wb_dat_i(wb_dat),
+                                     .wb_we_i(wb_we),
+                                     .wb_stb_i(wb_stb),
+                                     .wb_sel_i(wb_sel),
+                                     .wb_cyc_i(uart_cyc),
+                                     .wb_ack_o(uart_ack),
+                                     .wb_dat_o(uart_data),
+                                     
+                                     .uart_rx_i(uart_rx_i),
+                                     .uart_tx_o(uart_tx_o)
+);                                         
 
 endmodule
