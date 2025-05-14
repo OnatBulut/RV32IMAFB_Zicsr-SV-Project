@@ -173,7 +173,7 @@ module vga_driver_m (
     assign vga_addr = mult_result + { 5'h0, col[6:1] };
     
     logic [7:0] char;
-    assign char = (~col[0]) ? rdata[23:16] : rdata[7:0];
+    assign char = (~col[0]) ? rdata[7:0] : rdata[23:16];
     
     logic is_render;
     font_rom_m font_rom (
@@ -188,11 +188,11 @@ module vga_driver_m (
     logic [3:0] bg_color_sel;
     always_comb begin
         if (~col[0]) begin
-            fg_color_sel = rdata[27:24];
-            bg_color_sel = rdata[31:28];
-        end else begin
             fg_color_sel = rdata[11:8];
             bg_color_sel = rdata[15:12];
+        end else begin
+            fg_color_sel = rdata[27:24];
+            bg_color_sel = rdata[31:28];
         end
     end
     
