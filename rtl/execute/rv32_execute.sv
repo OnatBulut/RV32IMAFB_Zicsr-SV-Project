@@ -13,7 +13,7 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
                      input  logic [31:0] fp_read_data_1_i, fp_read_data_2_i, fp_read_data_3_i,
                      input  logic [31:0] pc_i, pc_next_i,
                      input  logic [31:0] imm_extend_i,
-                     input  logic [31:0] forwarded_res_w_i,
+                     input  logic [31:0] forwarded_res_m2_i, forwarded_res_w_i,
                      
                      output logic        pc_source_o,
                      output logic        reg_write_o, fp_reg_write_o, memory_write_o,
@@ -43,14 +43,16 @@ module rv32_execute (input  logic        clk_i, rst_n_i,
         case (forward_a_i)
             2'b00:   source_1 = read_data_1_i;
             2'b01:   source_1 = forwarded_res_w_i;
-            2'b10:   source_1 = alu_result_o;
+            2'b10:   source_1 = forwarded_res_m2_i;
+            2'b11:   source_1 = alu_result_o;
             default: source_1 = 32'bx;
         endcase
         
         case (forward_b_i)
             2'b00:   source_2 = read_data_2_i;
             2'b01:   source_2 = forwarded_res_w_i;
-            2'b10:   source_2 = alu_result_o;
+            2'b10:   source_2 = forwarded_res_m2_i;
+            2'b11:   source_1 = alu_result_o;
             default: source_2 = 32'bx;
         endcase
     end

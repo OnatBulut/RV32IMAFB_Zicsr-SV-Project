@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module rv32_hazard_unit (input  logic        clk_i, rst_n_i,
-                         input  logic        reg_write_m_i, reg_write_w_i, result_src_e_b0_i, pc_src_e_i,
+                         input  logic        reg_write_m_i, reg_write_m2_i, reg_write_w_i, result_src_e_i, pc_src_e_i,
                          input  logic        mul_div_done_i, mul_div_running_i,
-                         input  logic [4:0]  rd_e_i, rd_m_i, rd_w_i, rd_md_i, rs1_d_i, rs2_d_i, rs1_e_i, rs2_e_i, rs1_md_i, rs2_md_i,
+                         input  logic [4:0]  rd_e_i, rd_m1_i, rd_m2_i, rd_w_i, rd_md_i, rs1_d_i, rs2_d_i, rs1_e_i, rs2_e_i, rs1_md_i, rs2_md_i,
 
                          output logic        stall_f_o, stall_d_o, stall_e_o, stall_m_o, stall_w_o, flush_d_o, flush_e_o, flush_md_o,
                          output logic [1:0]  forward_ae_o, forward_be_o);
@@ -12,22 +12,26 @@ module rv32_hazard_unit (input  logic        clk_i, rst_n_i,
     logic secondary_flush_d;
                    
     always_comb begin           
-        if (((rs1_e_i[4:0] == rd_m_i) && reg_write_m_i) && (rs1_e_i[4:0] != 5'b0)) // Forward from Memory stage
+        if (((rs1_e_i == rd_m1_i) && reg_write_m_i) && (rs1_e_i != 5'b0)) // Forward from Memory stage 1
+            forward_ae_o = 2'b11;
+        else if (((rs1_e_i == rd_m2_i) && reg_write_m2_i) && (rs1_e_i != 5'b0)) // Forward from Memory stage 2
             forward_ae_o = 2'b10;
-        else if (((rs1_e_i[4:0] == rd_w_i) && reg_write_w_i) && (rs1_e_i[4:0] != 5'b0)) // Forward from Writeback stage
+        else if (((rs1_e_i == rd_w_i) && reg_write_w_i) && (rs1_e_i != 5'b0)) // Forward from Writeback stage
             forward_ae_o = 2'b01;
         else
             forward_ae_o = 2'b00; // No forwarding (use RF output)
             
-        if (((rs2_e_i[4:0] == rd_m_i) && reg_write_m_i) && (rs2_e_i[4:0] != 5'b0)) // Forward from Memory stage
+        if (((rs2_e_i == rd_m1_i) && reg_write_m_i) && (rs2_e_i != 5'b0)) // Forward from Memory stage 1
+            forward_be_o = 2'b11;
+        else if (((rs2_e_i == rd_m2_i) && reg_write_m2_i) && (rs2_e_i != 5'b0)) // Forward from Memory stage 2
             forward_be_o = 2'b10;
-        else if (((rs2_e_i[4:0] == rd_w_i) && reg_write_w_i) && (rs2_e_i[4:0] != 5'b0)) // Forward from Writeback stage
+        else if (((rs2_e_i == rd_w_i) && reg_write_w_i) && (rs2_e_i != 5'b0)) // Forward from Writeback stage
             forward_be_o = 2'b01;
         else
             forward_be_o = 2'b00; // No forwarding (use RF output)
     end
     
-    assign lw_stall  = result_src_e_b0_i && ((rs1_d_i == rd_e_i) || (rs2_d_i == rd_e_i));
+    assign lw_stall  = result_src_e_i == 3'b001 && ((rs1_d_i == rd_e_i) || (rs2_d_i == rd_e_i));
     assign md_stall  = mul_div_done_i || mul_div_running_i && ((rs1_d_i == rd_md_i) || (rs2_d_i == rd_md_i));
     
     assign stall_f_o = lw_stall || md_stall;

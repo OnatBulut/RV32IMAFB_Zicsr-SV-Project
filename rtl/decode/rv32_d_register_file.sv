@@ -9,8 +9,9 @@ module rv32_d_register_file (input  logic        clk_i, write_enable_3_i,
 
     logic [31:0] rf [31:1];
 
-    always_ff @(negedge clk_i)
+    always_ff @(negedge clk_i) begin
         if (write_enable_3_i) rf[write_address_3_i] <= write_data_3_i;
+    end 
 
     assign read_data_1_o = (read_address_1_i == 5'b0) ? 32'b0 : rf[read_address_1_i];  
     assign read_data_2_o = (read_address_2_i == 5'b0) ? 32'b0 : rf[read_address_2_i];

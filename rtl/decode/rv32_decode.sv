@@ -75,15 +75,15 @@ module rv32_decode (input  logic        clk_i, rst_n_i,
     logic [31:0] fp_read_data_1, fp_read_data_2, fp_read_data_3;
 
     rv32_d_fp_register_file FP_Register_File (.clk_i(clk_i),
-                                             .write_enable_4_i(fp_reg_write_enable_i),
-                                             .read_address_1_i(instr_i[19:15]),
-                                             .read_address_2_i(instr_i[24:20]),
-                                             .read_address_3_i(instr_i[31:27]),
-                                             .write_address_4_i(reg_write_address_i),
-                                             .write_data_4_i(reg_write_data_i),
-                                             .read_data_1_o(fp_read_data_1),
-                                             .read_data_2_o(fp_read_data_2),
-                                             .read_data_3_o(fp_read_data_3));                                
+                                              .write_enable_4_i(fp_reg_write_enable_i),
+                                              .read_address_1_i(instr_i[19:15]),
+                                              .read_address_2_i(instr_i[24:20]),
+                                              .read_address_3_i(instr_i[31:27]),
+                                              .write_address_4_i(reg_write_address_i),
+                                              .write_data_4_i(reg_write_data_i),
+                                              .read_data_1_o(fp_read_data_1),
+                                              .read_data_2_o(fp_read_data_2),
+                                              .read_data_3_o(fp_read_data_3));                                
 
     logic [31:0] imm_extend;
                                        

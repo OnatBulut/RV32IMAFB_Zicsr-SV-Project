@@ -102,7 +102,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic [`EXCEPTION_WIDTH-1:0] exceptions_c;
     logic [31:0] instr_m;
     logic [31:0] pc_next_m;
-    logic [31:0] alu_result_m;
+    logic [31:0] alu_result_m, alu_result_m2;
     logic [31:0] write_data;
     logic [31:0] fpu_result_m;
     
@@ -132,6 +132,7 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                           .pc_i(pc_e),
                           .pc_next_i(pc_next_e),
                           .imm_extend_i(immediate_extend),
+                          .forwarded_res_m2_i(alu_result_m2),
                           .forwarded_res_w_i(writeback_result),
                           .pc_source_o(pc_source),
                           .reg_write_o(reg_write_m),
@@ -166,12 +167,13 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     logic        stall_w;
     logic [2:0]  result_source_w;
     logic [3:0]  memory_write_enable, wishbone_write_enable;
-    logic [31:0] instr_w;
+    logic [31:0] instr_m2, instr_w;
     logic [31:0] pc_next_w;
     logic [31:0] alu_result_w;
     logic [31:0] read_data, read_data_memory;
     logic [31:0] read_data_wishbone_m;
     logic [31:0] fpu_result_w;
+    logic [31:0] reg_write_m2;
 
     /*
     0x00000000 - 0x0001FFFF = INSTRUCTION MEMORY
@@ -211,14 +213,17 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                         .instr_i(instr_m),
                         .pc_next_i(pc_next_m),
                         .fpu_result_i(fpu_result_m),
+                        .reg_write_m2_o(reg_write_m2),
                         .reg_write_o(reg_write_w),
                         .fp_reg_write_o(fp_reg_write_w),
                         .result_source_o(result_source_w),
                         .memory_write_enable_o(memory_write_enable),
                         .memory_data_address_o(memory_data_address_o),
                         .memory_write_data_o(memory_write_data_o),
+                        .alu_result_m2_o(alu_result_m2),
                         .alu_result_o(alu_result_w),
                         .read_data_o(read_data),
+                        .instr_m2_o(instr_m2),
                         .instr_o(instr_w),
                         .pc_next_o(pc_next_w),
                         .fpu_result_o(fpu_result_w));
@@ -249,13 +254,15 @@ module rv32_core (input  logic        clk_i, rst_n_i,
     rv32_hazard_unit Hazard_Unit (.clk_i(clk_i),
                                   .rst_n_i(rst_n_i),
                                   .reg_write_m_i(reg_write_m),
+                                  .reg_write_m2_i(reg_write_m2),
                                   .reg_write_w_i(reg_write_w),
-                                  .result_src_e_b0_i(result_source_e[0]),
+                                  .result_src_e_i(result_source_e),
                                   .pc_src_e_i(pc_source),
                                   .mul_div_done_i(mul_div_done),
                                   .mul_div_running_i(mul_div_running),
                                   .rd_e_i(instr_e[11:7]),
-                                  .rd_m_i(instr_m[11:7]),
+                                  .rd_m1_i(instr_m[11:7]),
+                                  .rd_m2_i(instr_m2[11:7]),
                                   .rd_w_i(instr_wd[11:7]),
                                   .rd_md_i(mul_div_instr[11:7]),
                                   .rs1_d_i(instr_d[19:15]),

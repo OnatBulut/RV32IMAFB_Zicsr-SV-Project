@@ -12,16 +12,16 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
                     input  logic [31:0] pc_next_i,
                     input  logic [31:0] fpu_result_i,
                     
-                    output logic        reg_write_o, fp_reg_write_o,
+                    output logic        reg_write_m2_o, reg_write_o, fp_reg_write_o,
                     output logic [2:0]  result_source_o,
                     
                     output logic [3:0]  memory_write_enable_o,
                     output logic [31:0] memory_data_address_o,
                     output logic [31:0] memory_write_data_o,
                     
-                    output logic [31:0] alu_result_o,
+                    output logic [31:0] alu_result_m2_o, alu_result_o,
                     output logic [31:0] read_data_o,
-                    output logic [31:0] instr_o,
+                    output logic [31:0] instr_m2_o, instr_o,
                     output logic [31:0] pc_next_o,
                     output logic [31:0] fpu_result_o);
                     
@@ -30,6 +30,7 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
 
     rv32_m_memory_controller Memory_Controller (.write_enable_i(memory_write_i),
                                                 .address_2lsb_i(alu_result_i[1:0]),
+                                                .address_2lsb_m2_i(alu_result_m2_o[1:0]),
                                                 .funct3_i(instr_i[14:12]),
                                                 .datapath_read_i(write_data_i),
                                                 .memory_read_i(read_data_memory_i),
@@ -70,6 +71,9 @@ module rv32_memory (input  logic        clk_i, rst_n_i,
     end
     
     // Memory outputs the correct data here (read_data_memory_m2) due to its one cycle delay.
+    assign reg_write_m2_o = reg_write_reg;
+    assign alu_result_m2_o = alu_result_reg;
+    assign instr_m2_o = instr_reg;
 
     // Determine the source to read from
     always_comb begin : read_data_mux
