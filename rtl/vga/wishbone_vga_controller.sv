@@ -12,7 +12,7 @@ module wishbone_vga_controller (input  logic        clk_i, rst_n_i,
         vga_driver_m vga_driver (
         .i_clk(clk_i),
         .i_rst_n(rst_n_i),
-        .i_vga_mem_we(wb_sel_i),
+        .i_vga_mem_we(wb_sel_i & {4{wb_cyc_i}}),
         .i_vga_mem_waddr(wb_adr_i),
         .i_vga_mem_wdata(wb_dat_i),
         .o_hsync(o_hsync),

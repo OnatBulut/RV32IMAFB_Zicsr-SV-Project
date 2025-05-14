@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 
-module uart_denetleyici (
+module uart (
    input  logic clk_i,
    input  logic rst_i,
    input  logic [ 1:0] wb_adr_i,
