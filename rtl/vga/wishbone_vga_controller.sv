@@ -28,6 +28,7 @@ module wishbone_vga_controller (input  logic        clk_i, rst_n_i,
             wb_ack_o   <= 1'b0;
             vga_mem_we <= 4'b0000;
         end else begin
+            vga_mem_we <= 4'b0000;
             if (wb_cyc_i) begin
                 wb_ack_o <= wb_stb_i & !wb_ack_o;
                 if (wb_stb_i & wb_we_i & !wb_ack_o) begin

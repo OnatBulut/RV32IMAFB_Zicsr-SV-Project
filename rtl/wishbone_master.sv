@@ -49,14 +49,14 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
     typedef enum logic { IDLE, BUS } bus_state_t;
     bus_state_t state, next_state;
 
-    always_ff @(posedge clk_i, negedge rst_n_i) begin
+    always_ff @(posedge clk_i) begin
         if (!rst_n_i) begin
             state <= IDLE;
-            we    <= 1'b0;
         end else begin
             state <= next_state;
-            we    <= |mem_we_i;
-        end  
+        end
+
+        we    <= |mem_we_i;
     end
 
     always_comb begin
