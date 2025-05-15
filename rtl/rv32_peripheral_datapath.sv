@@ -17,7 +17,10 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                  output logic spi_cs_o,
 
                                  output logic hsync_o, vsync_o,
-                                 output logic [11:0] rgb444_o);
+                                 output logic [11:0] rgb444_o,
+                                 
+                                 input  logic ps2clk_i,
+                                 input  logic ps2data_i);
 
     logic        wb_we;
     logic        wb_stb;
@@ -35,6 +38,10 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
 
     logic        vga_ack;
     logic        vga_cyc;
+    
+    logic        keyb_ack;
+    logic        keyb_cyc;
+    logic [31:0] keyb_data;
 
     wishbone_master Wishbone_Master (.clk_i(clk_i),
                                      .rst_n_i(rst_n_i),
@@ -50,6 +57,9 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                                      .spi_data_i(spi_data),
                                      .vga_cyc_o(vga_cyc),
                                      .vga_ack_i(vga_ack),
+                                     .keyb_cyc_o(keyb_cyc),
+                                     .keyb_ack_i(keyb_ack),
+                                     .keyb_data_i(keyb_data),
                                      .stall_o(stall_o),
                                      .wb_adr_o(wb_adr),
                                      .wb_dat_o(wb_dat),
@@ -82,6 +92,17 @@ module rv32_peripheral_datapath (input  logic        clk_i, rst_n_i,
                           .wb_dat_o(uart_data),
                                        
                           .uart_rx_i(uart_rx_i),
-                          .uart_tx_o(uart_tx_o));                                         
+                          .uart_tx_o(uart_tx_o));
+                          
+    keyboard_wishbone Keyboard (.clk_i(clk_i),
+                                .rst_n_i(rst_n_i),
+                                .wb_stb_i(wb_stb),
+                                .wb_cyc_i(keyb_cyc),
+                                .wb_adr_i(wb_adr),
+                                .ps2clk_i(ps2clk_i),
+                                .ps2data_i(ps2data_i),
+                                .wb_sel_i(wb_sel),
+                                .wb_ack_o(keyb_ack),
+                                .wb_dat_o(keyb_data));                                       
 
 endmodule

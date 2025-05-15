@@ -17,6 +17,10 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
 
                         input  logic        vga_ack_i,
                         output logic        vga_cyc_o,
+                        
+                        input  logic        keyb_ack_i,
+                        input  logic [31:0] keyb_data_i,
+                        output logic        keyb_cyc_o,
 
                         output logic        stall_o,
                         output logic        wb_we_o,
@@ -31,7 +35,7 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
         2'b00:   begin ack = uart_ack_i; mem_data_o = uart_data_i; end
         2'b01:   begin ack = spi_ack_i;  mem_data_o = spi_data_i;  end
         2'b10:   begin ack = vga_ack_i;  mem_data_o = 32'b0;       end
-        default: begin ack = 1'b0;       mem_data_o = 32'b0;       end
+        2'b11:   begin ack = keyb_ack_i; mem_data_o = keyb_data_i; end
     endcase
 
     assign wb_adr_o = mem_addr_i[15:0];
@@ -42,6 +46,7 @@ module wishbone_master (input  logic        clk_i, rst_n_i,
     assign uart_cyc_o = (mem_addr_i[17:16] == 2'b00) ? cyc : 1'b0;
     assign spi_cyc_o  = (mem_addr_i[17:16] == 2'b01) ? cyc : 1'b0;
     assign vga_cyc_o  = (mem_addr_i[17:16] == 2'b10) ? cyc : 1'b0;
+    assign keyb_cyc_o = (mem_addr_i[17:16] == 2'b11) ? cyc : 1'b0;
 
     logic stall, we;
     assign stall_o = (!we && mem_we_i) || stall;

@@ -15,6 +15,9 @@ module rv32_core (input  logic        clk_i, rst_n_i,
 
                   output logic hsync_o, vsync_o,
                   output logic [11:0] rgb444_o,
+                  
+                  input  logic ps2clk_i,
+                  input  logic ps2data_i,
                  
                   output logic [3:0]  memory_write_enable_o,
                   output logic [31:0] memory_instr_address_o,
@@ -194,7 +197,9 @@ module rv32_core (input  logic        clk_i, rst_n_i,
                                                   .spi_cs_o(spi_cs_o),
                                                   .hsync_o(hsync_o),
                                                   .vsync_o(vsync_o),
-                                                  .rgb444_o(rgb444_o));
+                                                  .rgb444_o(rgb444_o),
+                                                  .ps2clk_i(ps2clk_i),
+                                                  .ps2data_i(ps2data_i));
 
     rv32_memory Memory (.clk_i(clk_i),
                         .rst_n_i(rst_n_i),

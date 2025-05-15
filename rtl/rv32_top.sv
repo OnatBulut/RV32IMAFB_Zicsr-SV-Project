@@ -12,6 +12,9 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
 
                  output logic hsync_o, vsync_o,
                  output logic [11:0] rgb444_o,
+                 
+                 input  logic ps2clk_i,
+                 input  logic ps2data_i,
                 
                  output logic read_data_o, write_data_o);
                  
@@ -42,6 +45,8 @@ module rv32_top (input  logic clk_sys_i, rst_n_i,
                     .hsync_o(hsync_o),
                     .vsync_o(vsync_o),
                     .rgb444_o(rgb444_o),
+                    .ps2clk_i(ps2clk_i),
+                    .ps2data_i(ps2data_i),
                     .memory_write_enable_o(write_enable),
                     .memory_instr_address_o(instr_address),
                     .memory_data_address_o(data_address),
